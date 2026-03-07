@@ -14,17 +14,16 @@
 
     <style>
         :root {
-            /* Palette Dark Mode - Foco em contraste e legibilidade */
-            --bg: #0f172a;        /* Slate 950 */
-            --card: #1e293b;      /* Slate 800 */
-            --primary: #3b82f6;   /* Blue 500 */
-            --secondary: #94a3b8; /* Slate 400 */
-            --danger: #ef4444;    /* Red 500 */
-            --success: #22c55e;   /* Green 500 */
-            --warning: #f59e0b;   /* Amber 500 */
-            --text: #f1f5f9;      /* Slate 100 */
-            --border: #334155;    /* Slate 700 */
-            --input-bg: #1e293b;
+            /* Palette Dark Mode */
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --secondary: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #f1f5f9;
+            --border: #334155;
         }
 
         * { 
@@ -38,7 +37,7 @@
             color: var(--text);
             margin: 0;
             padding: 16px;
-            padding-bottom: 80px; /* Espaço para o botão home não cobrir conteúdo */
+            padding-bottom: 80px;
             line-height: 1.5;
             user-select: none;
         }
@@ -48,14 +47,47 @@
             margin: 0 auto;
         }
 
+        /* Topo com Título e Reset */
+        .header-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
         h1 {
             text-align: center;
             font-size: 1.8rem;
-            margin-bottom: 24px;
+            margin: 0;
             color: var(--text);
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .btn-reset-all {
+            position: absolute;
+            right: 0;
+            background: none;
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset-all:active {
+            background: var(--danger);
+            color: white;
+            transform: scale(0.9);
         }
 
         .module {
@@ -167,22 +199,6 @@
             font-size: 12px;
         }
 
-        #installBtn {
-            position: fixed;
-            bottom: 24px;
-            right: 80px; /* Lado a lado com o Home se necessário */
-            background: var(--text);
-            color: var(--bg);
-            padding: 12px 28px;
-            border-radius: 30px;
-            display: none;
-            border: none;
-            font-weight: 800;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        /* Botão Home Flutuante */
         #homeBtn {
             position: fixed;
             bottom: 24px;
@@ -202,8 +218,6 @@
             z-index: 1001;
         }
 
-        #homeBtn:active { transform: scale(0.9); }
-
         .edit-fields {
             display: flex;
             gap: 6px;
@@ -214,7 +228,10 @@
 <body>
 
 <div class="container">
-    <h1>LISTA DE COMPRAS</h1>
+    <div class="header-area">
+        <h1>LISTA DE COMPRAS</h1>
+        <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Lista">X</button>
+    </div>
 
     <!-- MÓDULO COMIDA -->
     <div class="module">
@@ -249,10 +266,7 @@
     </div>
 </div>
 
-<!-- Botão Home Flutuante -->
 <button id="homeBtn" onclick="closeAllModules()">🏠</button>
-
-<button id="installBtn">INSTALAR APP</button>
 
 <script>
     const DB_KEY = 'andre_shopping_dark_v1';
@@ -266,10 +280,18 @@
         if (!isOpen) el.classList.add('open');
     }
 
-    // Fecha todos os módulos e volta para o topo
     function closeAllModules() {
         document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetAllData() {
+        // Confirmação para evitar desastres
+        if (confirm("Deseja apagar todos os itens da lista? Esta ação é irreversível.")) {
+            db = { comida: [], higiene: [] };
+            save();
+            closeAllModules();
+        }
     }
 
     function createItem(cat) {
@@ -351,31 +373,11 @@
         });
     }
 
-    // Registro do Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('SW: Ativo'))
-            .catch(err => console.log('SW: Erro', err));
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
         });
     }
-
-    // Instalação PWA
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('installBtn').style.display = 'block';
-    });
-
-    document.getElementById('installBtn').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') document.getElementById('installBtn').style.display = 'none';
-            deferredPrompt = null;
-        }
-    });
 
     render();
 </script>
