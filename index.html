@@ -359,10 +359,14 @@
 
     function resetChecks() {
         if (confirm("Deseja desmarcar todos os itens? Os itens continuarão na lista, mas voltarão ao estado de 'não comprados'.")) {
+            // Itera sobre as categorias e garante a alteração no objeto original
             CATEGORIES.forEach(cat => {
-                db[cat].forEach(item => {
-                    item.checked = false;
-                });
+                if (db[cat]) {
+                    db[cat] = db[cat].map(item => ({
+                        ...item,
+                        checked: false
+                    }));
+                }
             });
             save();
         }
