@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LISTA DE COMPRAS</title>
     
-    <!-- PWA Meta -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -238,7 +238,6 @@
         <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Tudo">X</button>
     </div>
 
-    <!-- MANTIMENTOS -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('mantimentos')">
             <span>📦 MANTIMENTOS</span>
@@ -254,7 +253,6 @@
         </div>
     </div>
 
-    <!-- CARNES E DERIVADOS -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('carnes')">
             <span>🥩 CARNES E DERIVADOS</span>
@@ -270,7 +268,6 @@
         </div>
     </div>
 
-    <!-- HIGIENE -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('higiene')">
             <span>🧼 HIGIENE E LIMPEZA</span>
@@ -286,7 +283,6 @@
         </div>
     </div>
 
-    <!-- FEIRA -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('feira')">
             <span>🥦 FEIRA</span>
@@ -309,10 +305,8 @@
     const DB_KEY = 'andre_shopping_dark_v1';
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
     
-    // Inicialização do banco
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
     
-    // Migração de dados legados (Comida -> Mantimentos)
     if (db.comida) {
         db.mantimentos = [...(db.mantimentos || []), ...(db.comida || [])];
         delete db.comida;
@@ -321,7 +315,6 @@
     
     let editId = null;
 
-    // Interface
     function toggleModule(id) {
         const el = document.getElementById(id);
         const isOpen = el.classList.contains('open');
@@ -334,7 +327,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Operações de Dados
     function resetAllData() {
         if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
             db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
@@ -347,7 +339,6 @@
         if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
             CATEGORIES.forEach(cat => {
                 if (db[cat]) {
-                    // Mapeia para um novo array garantindo imutabilidade e reset do booleano
                     db[cat] = db[cat].map(item => ({ ...item, checked: false }));
                 }
             });
@@ -372,7 +363,7 @@
         if (!name || isNaN(qty) || qty <= 0) return;
 
         db[cat].push({ 
-            id: Date.now() + Math.random(), // ID mais robusto
+            id: Date.now() + Math.random(), 
             name: name, 
             qty: qty, 
             checked: false 
@@ -408,7 +399,6 @@
         save();
     }
 
-    // Persistência e Renderização
     function save() {
         localStorage.setItem(DB_KEY, JSON.stringify(db));
         render();
@@ -453,8 +443,16 @@
         });
     }
 
-    // Initial load
     render();
+
+    // Registro do Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW ativo:', reg.scope))
+                .catch(err => console.error('Erro no SW:', err));
+        });
+    }
 </script>
 </body>
 </html>
