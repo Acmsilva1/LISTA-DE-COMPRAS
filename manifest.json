@@ -1,0 +1,17 @@
+{
+  "name": "Lista de Compras André",
+  "short_name": "Compras",
+  "description": "Minha lista de compras offline e privada",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/117/117066.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
