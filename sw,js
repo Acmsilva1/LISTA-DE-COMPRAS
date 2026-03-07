@@ -1,12 +1,11 @@
-const CACHE_NAME = 'shopping-list-v1';
+const CACHE_NAME = 'shopping-list-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  'https://cdn-icons-png.flaticon.com/512/117/117066.png'
+  './logo.png'
 ];
 
-// Instalação: Cacheia os arquivos essenciais
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -16,7 +15,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Ativação: Limpa caches antigos (Gerenciamento de versão)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -27,7 +25,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Estratégia de busca: Tenta rede, se falhar, vai no cache (Network First)
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).catch(() => {
