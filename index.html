@@ -38,6 +38,7 @@
             color: var(--text);
             margin: 0;
             padding: 16px;
+            padding-bottom: 80px; /* Espaço para o botão home não cobrir conteúdo */
             line-height: 1.5;
             user-select: none;
         }
@@ -169,8 +170,7 @@
         #installBtn {
             position: fixed;
             bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 80px; /* Lado a lado com o Home se necessário */
             background: var(--text);
             color: var(--bg);
             padding: 12px 28px;
@@ -181,6 +181,28 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
+
+        /* Botão Home Flutuante */
+        #homeBtn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        #homeBtn:active { transform: scale(0.9); }
 
         .edit-fields {
             display: flex;
@@ -227,6 +249,9 @@
     </div>
 </div>
 
+<!-- Botão Home Flutuante -->
+<button id="homeBtn" onclick="closeAllModules()">🏠</button>
+
 <button id="installBtn">INSTALAR APP</button>
 
 <script>
@@ -239,6 +264,12 @@
         const isOpen = el.classList.contains('open');
         document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
         if (!isOpen) el.classList.add('open');
+    }
+
+    // Fecha todos os módulos e volta para o topo
+    function closeAllModules() {
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function createItem(cat) {
