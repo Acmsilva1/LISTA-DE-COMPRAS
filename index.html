@@ -2,8 +2,16 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Compras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LISTA DE COMPRAS</title>
+    
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/117/117066.png">
+    
+    <link rel="manifest" href="manifest.json">
+
     <style>
         :root {
             --primary: #2563eb;
@@ -28,6 +36,7 @@
             margin: 0;
             padding: 16px;
             line-height: 1.5;
+            user-select: none;
         }
 
         .container {
@@ -41,7 +50,7 @@
             margin-bottom: 24px;
             color: var(--text);
             font-weight: 800;
-            letter-spacing: -0.025em;
+            text-transform: uppercase;
         }
 
         .module {
@@ -82,15 +91,7 @@
 
         .input-item { flex: 2 1 150px; }
         .input-qty { flex: 1 1 70px; }
-        .btn-add { 
-            flex: 1 1 100%; 
-            margin-top: 4px;
-        }
-
-        @media (min-width: 400px) {
-            .btn-add { flex: 0 1 auto; margin-top: 0; }
-        }
-
+        
         input {
             padding: 12px;
             border: 1px solid #cbd5e1;
@@ -110,8 +111,10 @@
             padding: 12px 20px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
+            flex: 1 1 100%;
         }
+
+        @media (min-width: 400px) { .btn-add { flex: 0 1 auto; } }
 
         .item-list {
             list-style: none;
@@ -130,44 +133,25 @@
 
         .item-row:last-child { border-bottom: none; }
 
-        .item-info {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
+        .item-info { flex-grow: 1; }
+        .item-name { font-weight: 600; font-size: 1.05rem; display: block; }
+        .item-qty { font-size: 0.85rem; color: var(--secondary); }
 
-        .item-name { font-weight: 600; font-size: 1.05rem; }
-        .item-qty { 
-            font-size: 0.85rem; 
-            color: var(--secondary);
-        }
+        .actions { display: flex; gap: 6px; }
 
-        .actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        .btn-delete {
-            background-color: var(--danger);
-            color: white;
+        .btn-delete, .btn-edit, .btn-save {
             border: none;
             border-radius: 6px;
             padding: 8px 12px;
             font-size: 12px;
             font-weight: 600;
+            color: white;
             cursor: pointer;
         }
 
-        .btn-edit {
-            background-color: var(--warning);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .btn-delete { background-color: var(--danger); }
+        .btn-edit { background-color: var(--warning); }
+        .btn-save { background-color: var(--primary); }
 
         .badge {
             background: rgba(255,255,255,0.25);
@@ -176,13 +160,28 @@
             font-size: 12px;
         }
 
-        /* Estilo para o modo edição na lista */
-        .edit-mode-inputs {
+        #installBtn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            display: none;
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .edit-fields {
             display: flex;
-            gap: 4px;
+            gap: 5px;
             flex-grow: 1;
         }
-        .edit-mode-inputs input {
+        .edit-fields input {
             padding: 6px;
             font-size: 14px;
         }
@@ -193,7 +192,7 @@
 <div class="container">
     <h1>LISTA DE COMPRAS</h1>
 
-    <!-- Módulo COMIDA -->
+    <!-- COMIDA -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('comida')">
             <span>🍎 COMIDA</span>
@@ -205,11 +204,11 @@
                 <input type="number" id="qty-comida" class="input-qty" placeholder="Qtd" min="1" value="1">
                 <button class="btn-add" onclick="createItem('comida')">ADICIONAR</button>
             </div>
-            <ul class="item-list" id="list-comida"></ul>
+            <ul id="list-comida" class="item-list"></ul>
         </div>
     </div>
 
-    <!-- Módulo HIGIENE -->
+    <!-- HIGIENE -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('higiene')">
             <span>🧼 HIGIENE E LIMPEZA</span>
@@ -221,20 +220,17 @@
                 <input type="number" id="qty-higiene" class="input-qty" placeholder="Qtd" min="1" value="1">
                 <button class="btn-add" onclick="createItem('higiene')">ADICIONAR</button>
             </div>
-            <ul class="item-list" id="list-higiene"></ul>
+            <ul id="list-higiene" class="item-list"></ul>
         </div>
     </div>
 </div>
 
-<script>
-    const STORAGE_KEY = 'minha_lista_compras_v3';
-    let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-        comida: [],
-        higiene: []
-    };
+<button id="installBtn">INSTALAR APLICATIVO</button>
 
-    // Estado para controlar qual item está sendo editado
-    let editingId = null;
+<script>
+    const DB_KEY = 'andre_shopping_v4';
+    let db = JSON.parse(localStorage.getItem(DB_KEY)) || { comida: [], higiene: [] };
+    let editId = null;
 
     function toggleModule(id) {
         const el = document.getElementById(id);
@@ -243,82 +239,68 @@
         if (!isOpen) el.classList.add('open');
     }
 
-    function createItem(category) {
-        const nameInput = document.getElementById(`name-${category}`);
-        const qtyInput = document.getElementById(`qty-${category}`);
-        const name = nameInput.value.trim();
-        const qty = parseInt(qtyInput.value);
+    function createItem(cat) {
+        const n = document.getElementById(`name-${cat}`);
+        const q = document.getElementById(`qty-${cat}`);
+        const name = n.value.trim();
+        const qty = parseInt(q.value);
 
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        db[category].push({
-            id: Date.now(),
-            name: name,
-            qty: qty
-        });
-
-        save();
-        nameInput.value = '';
-        qtyInput.value = '1';
-        nameInput.focus();
-    }
-
-    function deleteItem(category, id) {
-        db[category] = db[category].filter(item => item.id !== id);
+        db[cat].push({ id: Date.now(), name, qty });
+        n.value = ''; q.value = '1';
         save();
     }
 
-    // Inicia o modo de edição
+    function deleteItem(cat, id) {
+        db[cat] = db[cat].filter(i => i.id !== id);
+        save();
+    }
+
     function startEdit(id) {
-        editingId = id;
+        editId = id;
         render();
     }
 
-    // Salva a edição
-    function saveEdit(category, id) {
-        const newName = document.getElementById(`edit-name-${id}`).value.trim();
-        const newQty = parseInt(document.getElementById(`edit-qty-${id}`).value);
+    function saveEdit(cat, id) {
+        const newName = document.getElementById(`edit-n-${id}`).value.trim();
+        const newQty = parseInt(document.getElementById(`edit-q-${id}`).value);
 
         if (!newName || isNaN(newQty) || newQty <= 0) return;
 
-        const itemIndex = db[category].findIndex(item => item.id === id);
-        if (itemIndex > -1) {
-            db[category][itemIndex].name = newName;
-            db[category][itemIndex].qty = newQty;
+        const item = db[cat].find(i => i.id === id);
+        if (item) {
+            item.name = newName;
+            item.qty = newQty;
         }
-
-        editingId = null;
+        editId = null;
         save();
     }
 
     function save() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
         render();
     }
 
     function render() {
         ['comida', 'higiene'].forEach(cat => {
-            const listEl = document.getElementById(`list-${cat}`);
-            const badgeEl = document.getElementById(`badge-${cat}`);
-            listEl.innerHTML = '';
+            const list = document.getElementById(`list-${cat}`);
+            const badge = document.getElementById(`badge-${cat}`);
+            list.innerHTML = '';
             
             db[cat].forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'item-row';
                 
-                if (editingId === item.id) {
-                    // Interface de Edição
+                if (editId === item.id) {
                     li.innerHTML = `
-                        <div class="edit-mode-inputs">
-                            <input type="text" id="edit-name-${item.id}" value="${item.name}" style="flex: 2">
-                            <input type="number" id="edit-qty-${item.id}" value="${item.qty}" style="flex: 1">
+                        <div class="edit-fields">
+                            <input type="text" id="edit-n-${item.id}" value="${item.name}" style="flex:2">
+                            <input type="number" id="edit-q-${item.id}" value="${item.qty}" style="flex:1">
                         </div>
-                        <div class="actions">
-                            <button class="btn-add" onclick="saveEdit('${cat}', ${item.id})" style="padding: 8px; font-size: 12px;">OK</button>
-                        </div>
+                        <button class="btn-save" onclick="saveEdit('${cat}', ${item.id})">OK</button>
                     `;
                 } else {
-                    // Interface Normal
                     li.innerHTML = `
                         <div class="item-info">
                             <span class="item-name">${item.name}</span>
@@ -330,13 +312,39 @@
                         </div>
                     `;
                 }
-                listEl.appendChild(li);
+                list.appendChild(li);
             });
-            badgeEl.innerText = db[cat].length;
+            badge.innerText = db[cat].length;
         });
     }
 
-    window.onload = render;
+    // PWA: Registro do Service Worker formal
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker: Ativo'))
+            .catch(err => console.log('Service Worker: Erro', err));
+        });
+    }
+
+    // Prompt de Instalação
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installBtn').style.display = 'block';
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') document.getElementById('installBtn').style.display = 'none';
+            deferredPrompt = null;
+        }
+    });
+
+    render();
 </script>
 </body>
 </html>
