@@ -9,12 +9,9 @@
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="manifest" href="manifest.json">
 
     <style>
         :root {
-            /* Palette Dark Mode */
             --bg: #0f172a;
             --card: #1e293b;
             --primary: #3b82f6;
@@ -80,29 +77,11 @@
             transition: all 0.2s;
         }
 
-        .btn-reset-all {
-            right: 0;
-            border: 2px solid var(--danger);
-            color: var(--danger);
-        }
+        .btn-reset-all { right: 0; border: 2px solid var(--danger); color: var(--danger); }
+        .btn-reset-checks { left: 0; border: 2px solid var(--success); color: var(--success); }
 
-        .btn-reset-checks {
-            left: 0;
-            border: 2px solid var(--success);
-            color: var(--success);
-        }
-
-        .btn-reset-all:active {
-            background: var(--danger);
-            color: white;
-            transform: scale(0.9);
-        }
-
-        .btn-reset-checks:active {
-            background: var(--success);
-            color: white;
-            transform: scale(0.9);
-        }
+        .btn-reset-all:active { background: var(--danger); color: white; transform: scale(0.9); }
+        .btn-reset-checks:active { background: var(--success); color: white; transform: scale(0.9); }
 
         .module {
             background: var(--card);
@@ -169,11 +148,7 @@
 
         @media (min-width: 400px) { .btn-add { flex: 0 1 auto; } }
 
-        .item-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+        .item-list { list-style: none; padding: 0; margin: 0; }
 
         .item-row {
             display: flex;
@@ -185,10 +160,7 @@
             transition: opacity 0.3s;
         }
 
-        .item-row.checked {
-            opacity: 0.5;
-        }
-
+        .item-row.checked { opacity: 0.5; }
         .item-row:last-child { border-bottom: none; }
 
         .check-container {
@@ -204,19 +176,10 @@
             position: relative;
         }
 
-        .check-container.checked {
-            border-color: var(--success);
-            background: rgba(34, 197, 94, 0.1);
-        }
+        .check-container.checked { border-color: var(--success); background: rgba(34, 197, 94, 0.1); }
+        .check-container.checked::after { content: '✓'; color: var(--success); font-size: 20px; font-weight: 900; }
 
-        .check-container.checked::after {
-            content: '✓';
-            color: var(--success);
-            font-size: 20px;
-            font-weight: 900;
-        }
-
-        .item-info { flex-grow: 1; margin-left: 8px; }
+        .item-info { flex-grow: 1; margin-left: 8px; cursor: pointer; }
         .item-name { font-weight: 600; font-size: 1.05rem; display: block; }
         .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
         .item-qty { font-size: 0.85rem; color: var(--secondary); }
@@ -263,11 +226,7 @@
             z-index: 1001;
         }
 
-        .edit-fields {
-            display: flex;
-            gap: 6px;
-            flex-grow: 1;
-        }
+        .edit-fields { display: flex; gap: 6px; flex-grow: 1; }
     </style>
 </head>
 <body>
@@ -276,26 +235,42 @@
     <div class="header-area">
         <button class="btn-reset-checks" onclick="resetChecks()" title="Resetar Marcações">✓</button>
         <h1>LISTA DE COMPRAS</h1>
-        <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Lista">X</button>
+        <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Tudo">X</button>
     </div>
 
-    <!-- MÓDULO COMIDA -->
+    <!-- MANTIMENTOS -->
     <div class="module">
-        <div class="module-header" onclick="toggleModule('comida')">
-            <span>🍎 COMIDA</span>
-            <span class="badge" id="badge-comida">0</span>
+        <div class="module-header" onclick="toggleModule('mantimentos')">
+            <span>📦 MANTIMENTOS</span>
+            <span class="badge" id="badge-mantimentos">0</span>
         </div>
-        <div id="comida" class="module-content">
+        <div id="mantimentos" class="module-content">
             <div class="form-group">
-                <input type="text" id="name-comida" class="input-item" placeholder="Item">
-                <input type="number" id="qty-comida" class="input-qty" placeholder="Qtd" min="1" value="1">
-                <button class="btn-add" onclick="createItem('comida')">ADICIONAR</button>
+                <input type="text" id="name-mantimentos" class="input-item" placeholder="Item">
+                <input type="number" id="qty-mantimentos" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('mantimentos')">ADICIONAR</button>
             </div>
-            <ul id="list-comida" class="item-list"></ul>
+            <ul id="list-mantimentos" class="item-list"></ul>
         </div>
     </div>
 
-    <!-- MÓDULO HIGIENE -->
+    <!-- CARNES E DERIVADOS -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('carnes')">
+            <span>🥩 CARNES E DERIVADOS</span>
+            <span class="badge" id="badge-carnes">0</span>
+        </div>
+        <div id="carnes" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-carnes" class="input-item" placeholder="Item">
+                <input type="number" id="qty-carnes" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('carnes')">ADICIONAR</button>
+            </div>
+            <ul id="list-carnes" class="item-list"></ul>
+        </div>
+    </div>
+
+    <!-- HIGIENE -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('higiene')">
             <span>🧼 HIGIENE E LIMPEZA</span>
@@ -311,7 +286,7 @@
         </div>
     </div>
 
-    <!-- MÓDULO FEIRA -->
+    <!-- FEIRA -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('feira')">
             <span>🥦 FEIRA</span>
@@ -332,11 +307,21 @@
 
 <script>
     const DB_KEY = 'andre_shopping_dark_v1';
-    const CATEGORIES = ['comida', 'higiene', 'feira'];
+    const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
     
-    let db = JSON.parse(localStorage.getItem(DB_KEY)) || { comida: [], higiene: [], feira: [] };
+    // Inicialização do banco
+    let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
+    
+    // Migração de dados legados (Comida -> Mantimentos)
+    if (db.comida) {
+        db.mantimentos = [...(db.mantimentos || []), ...(db.comida || [])];
+        delete db.comida;
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+    }
+    
     let editId = null;
 
+    // Interface
     function toggleModule(id) {
         const el = document.getElementById(id);
         const isOpen = el.classList.contains('open');
@@ -349,23 +334,21 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // Operações de Dados
     function resetAllData() {
-        if (confirm("Deseja apagar todos os itens da lista? Esta ação é irreversível.")) {
-            db = { comida: [], higiene: [], feira: [] };
+        if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
+            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
             save();
             closeAllModules();
         }
     }
 
     function resetChecks() {
-        if (confirm("Deseja desmarcar todos os itens? Os itens continuarão na lista, mas voltarão ao estado de 'não comprados'.")) {
-            // Itera sobre as categorias e garante a alteração no objeto original
+        if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
             CATEGORIES.forEach(cat => {
                 if (db[cat]) {
-                    db[cat] = db[cat].map(item => ({
-                        ...item,
-                        checked: false
-                    }));
+                    // Mapeia para um novo array garantindo imutabilidade e reset do booleano
+                    db[cat] = db[cat].map(item => ({ ...item, checked: false }));
                 }
             });
             save();
@@ -381,15 +364,22 @@
     }
 
     function createItem(cat) {
-        const n = document.getElementById(`name-${cat}`);
-        const q = document.getElementById(`qty-${cat}`);
-        const name = n.value.trim();
-        const qty = parseInt(q.value);
+        const nInput = document.getElementById(`name-${cat}`);
+        const qInput = document.getElementById(`qty-${cat}`);
+        const name = nInput.value.trim();
+        const qty = parseInt(qInput.value);
 
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        db[cat].push({ id: Date.now(), name, qty, checked: false });
-        n.value = ''; q.value = '1';
+        db[cat].push({ 
+            id: Date.now() + Math.random(), // ID mais robusto
+            name: name, 
+            qty: qty, 
+            checked: false 
+        });
+        
+        nInput.value = ''; 
+        qInput.value = '1';
         save();
     }
 
@@ -418,6 +408,7 @@
         save();
     }
 
+    // Persistência e Renderização
     function save() {
         localStorage.setItem(DB_KEY, JSON.stringify(db));
         render();
@@ -425,11 +416,11 @@
 
     function render() {
         CATEGORIES.forEach(cat => {
-            const list = document.getElementById(`list-${cat}`);
-            const badge = document.getElementById(`badge-${cat}`);
-            if(!list || !badge) return;
+            const listElement = document.getElementById(`list-${cat}`);
+            const badgeElement = document.getElementById(`badge-${cat}`);
+            if(!listElement || !badgeElement) return;
             
-            list.innerHTML = '';
+            listElement.innerHTML = '';
             
             db[cat].forEach(item => {
                 const li = document.createElement('li');
@@ -456,18 +447,13 @@
                         </div>
                     `;
                 }
-                list.appendChild(li);
+                listElement.appendChild(li);
             });
-            badge.innerText = db[cat].length;
+            badgeElement.innerText = db[cat].length;
         });
     }
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
-        });
-    }
-
+    // Initial load
     render();
 </script>
 </body>
