@@ -47,7 +47,6 @@
             margin: 0 auto;
         }
 
-        /* Topo com Título e Reset */
         .header-area {
             display: flex;
             justify-content: center;
@@ -129,7 +128,7 @@
         .input-item { flex: 2 1 150px; }
         .input-qty { flex: 1 1 70px; }
         
-        input {
+        input[type="text"], input[type="number"] {
             padding: 12px;
             background: var(--bg);
             border: 1px solid var(--border);
@@ -168,12 +167,44 @@
             padding: 14px 0;
             border-bottom: 1px solid var(--border);
             gap: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .item-row.checked {
+            opacity: 0.5;
         }
 
         .item-row:last-child { border-bottom: none; }
 
-        .item-info { flex-grow: 1; }
+        /* Checkbox Customizado */
+        .check-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .check-container.checked {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .check-container.checked::after {
+            content: '✓';
+            color: var(--success);
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .item-info { flex-grow: 1; margin-left: 8px; }
         .item-name { font-weight: 600; font-size: 1.05rem; display: block; }
+        .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
         .item-qty { font-size: 0.85rem; color: var(--secondary); }
 
         .actions { display: flex; gap: 8px; }
@@ -264,13 +295,31 @@
             <ul id="list-higiene" class="item-list"></ul>
         </div>
     </div>
+
+    <!-- MÓDULO FEIRA -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('feira')">
+            <span>🥦 FEIRA</span>
+            <span class="badge" id="badge-feira">0</span>
+        </div>
+        <div id="feira" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-feira" class="input-item" placeholder="Item">
+                <input type="number" id="qty-feira" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('feira')">ADICIONAR</button>
+            </div>
+            <ul id="list-feira" class="item-list"></ul>
+        </div>
+    </div>
 </div>
 
 <button id="homeBtn" onclick="closeAllModules()">🏠</button>
 
 <script>
     const DB_KEY = 'andre_shopping_dark_v1';
-    let db = JSON.parse(localStorage.getItem(DB_KEY)) || { comida: [], higiene: [] };
+    const CATEGORIES = ['comida', 'higiene', 'feira'];
+    
+    let db = JSON.parse(localStorage.getItem(DB_KEY)) || { comida: [], higiene: [], feira: [] };
     let editId = null;
 
     function toggleModule(id) {
@@ -286,11 +335,18 @@
     }
 
     function resetAllData() {
-        // Confirmação para evitar desastres
         if (confirm("Deseja apagar todos os itens da lista? Esta ação é irreversível.")) {
-            db = { comida: [], higiene: [] };
+            db = { comida: [], higiene: [], feira: [] };
             save();
             closeAllModules();
+        }
+    }
+
+    function toggleCheck(cat, id) {
+        const item = db[cat].find(i => i.id === id);
+        if (item) {
+            item.checked = !item.checked;
+            save();
         }
     }
 
@@ -302,7 +358,7 @@
 
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        db[cat].push({ id: Date.now(), name, qty });
+        db[cat].push({ id: Date.now(), name, qty, checked: false });
         n.value = ''; q.value = '1';
         save();
     }
@@ -338,14 +394,16 @@
     }
 
     function render() {
-        ['comida', 'higiene'].forEach(cat => {
+        CATEGORIES.forEach(cat => {
             const list = document.getElementById(`list-${cat}`);
             const badge = document.getElementById(`badge-${cat}`);
+            if(!list || !badge) return;
+            
             list.innerHTML = '';
             
             db[cat].forEach(item => {
                 const li = document.createElement('li');
-                li.className = 'item-row';
+                li.className = `item-row ${item.checked ? 'checked' : ''}`;
                 
                 if (editId === item.id) {
                     li.innerHTML = `
@@ -357,7 +415,8 @@
                     `;
                 } else {
                     li.innerHTML = `
-                        <div class="item-info">
+                        <div class="check-container ${item.checked ? 'checked' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
+                        <div class="item-info" onclick="toggleCheck('${cat}', ${item.id})">
                             <span class="item-name">${item.name}</span>
                             <span class="item-qty">Qtd: ${item.qty}</span>
                         </div>
