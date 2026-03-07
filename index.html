@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+        }
+
+        * { 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: var(--text);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .module {
+            background: var(--card);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .module-header {
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .module-header:active { filter: brightness(0.9); }
+
+        .module-content {
+            display: none;
+            padding: 16px;
+        }
+
+        .module-content.open { display: block; }
+
+        /* Melhor enquadramento para evitar botões cortados */
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .input-item { flex: 2 1 150px; }
+        .input-qty { flex: 1 1 70px; }
+        .btn-add { 
+            flex: 1 1 100%; 
+            margin-top: 4px;
+        }
+
+        @media (min-width: 400px) {
+            .btn-add { flex: 0 1 auto; margin-top: 0; }
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px; /* Evita zoom automático no iOS */
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
+
+        .btn-add {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-add:hover { background-color: #16a34a; }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .item-row:last-child { border-bottom: none; }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name { font-weight: 600; font-size: 1.05rem; }
+        .item-qty { 
+            font-size: 0.85rem; 
+            color: var(--secondary);
+        }
+
+        .btn-delete {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.25);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>LISTA DE COMPRAS</h1>
+
+    <!-- Módulo COMIDA -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('comida')">
+            <span>🍎 COMIDA</span>
+            <span class="badge" id="badge-comida">0</span>
+        </div>
+        <div id="comida" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-comida" class="input-item" placeholder="Item">
+                <input type="number" id="qty-comida" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('comida')">ADICIONAR</button>
+            </div>
+            <ul class="item-list" id="list-comida"></ul>
+        </div>
+    </div>
+
+    <!-- Módulo HIGIENE -->
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('higiene')">
+            <span>🧼 HIGIENE E LIMPEZA</span>
+            <span class="badge" id="badge-higiene">0</span>
+        </div>
+        <div id="higiene" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-higiene" class="input-item" placeholder="Item">
+                <input type="number" id="qty-higiene" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('higiene')">ADICIONAR</button>
+            </div>
+            <ul class="item-list" id="list-higiene"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'minha_lista_compras_v3';
+    let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+        comida: [],
+        higiene: []
+    };
+
+    function toggleModule(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.contains('open');
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+        if (!isOpen) el.classList.add('open');
+    }
+
+    function createItem(category) {
+        const nameInput = document.getElementById(`name-${category}`);
+        const qtyInput = document.getElementById(`qty-${category}`);
+        const name = nameInput.value.trim();
+        const qty = parseInt(qtyInput.value);
+
+        if (!name || isNaN(qty) || qty <= 0) return;
+
+        db[category].push({
+            id: Date.now(),
+            name: name,
+            qty: qty
+        });
+
+        save();
+        nameInput.value = '';
+        qtyInput.value = '1';
+        nameInput.focus();
+    }
+
+    function deleteItem(category, id) {
+        db[category] = db[category].filter(item => item.id !== id);
+        save();
+    }
+
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        render();
+    }
+
+    function render() {
+        ['comida', 'higiene'].forEach(cat => {
+            const listEl = document.getElementById(`list-${cat}`);
+            const badgeEl = document.getElementById(`badge-${cat}`);
+            listEl.innerHTML = '';
+            
+            db[cat].forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'item-row';
+                li.innerHTML = `
+                    <div class="item-info">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-qty">Qtd: ${item.qty}</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">EXCLUIR</button>
+                `;
+                listEl.appendChild(li);
+            });
+            badgeEl.innerText = db[cat].length;
+        });
+    }
+
+    window.onload = render;
+</script>
+</body>
+</html>
