@@ -57,20 +57,17 @@
 
         h1 {
             text-align: center;
-            font-size: 1.8rem;
-            margin: 0;
+            font-size: 1.5rem;
+            margin: 0 45px;
             color: var(--text);
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .btn-reset-all {
+        .btn-reset-all, .btn-reset-checks {
             position: absolute;
-            right: 0;
             background: none;
-            border: 2px solid var(--danger);
-            color: var(--danger);
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -83,8 +80,26 @@
             transition: all 0.2s;
         }
 
+        .btn-reset-all {
+            right: 0;
+            border: 2px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-reset-checks {
+            left: 0;
+            border: 2px solid var(--success);
+            color: var(--success);
+        }
+
         .btn-reset-all:active {
             background: var(--danger);
+            color: white;
+            transform: scale(0.9);
+        }
+
+        .btn-reset-checks:active {
+            background: var(--success);
             color: white;
             transform: scale(0.9);
         }
@@ -176,7 +191,6 @@
 
         .item-row:last-child { border-bottom: none; }
 
-        /* Checkbox Customizado */
         .check-container {
             display: flex;
             align-items: center;
@@ -260,6 +274,7 @@
 
 <div class="container">
     <div class="header-area">
+        <button class="btn-reset-checks" onclick="resetChecks()" title="Resetar Marcações">✓</button>
         <h1>LISTA DE COMPRAS</h1>
         <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Lista">X</button>
     </div>
@@ -339,6 +354,17 @@
             db = { comida: [], higiene: [], feira: [] };
             save();
             closeAllModules();
+        }
+    }
+
+    function resetChecks() {
+        if (confirm("Deseja desmarcar todos os itens? Os itens continuarão na lista, mas voltarão ao estado de 'não comprados'.")) {
+            CATEGORIES.forEach(cat => {
+                db[cat].forEach(item => {
+                    item.checked = false;
+                });
+            });
+            save();
         }
     }
 
