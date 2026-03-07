@@ -5,23 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LISTA DE COMPRAS</title>
     
-    <meta name="theme-color" content="#2563eb">
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/117/117066.png">
-    
+    <link rel="apple-touch-icon" href="logo.png">
     <link rel="manifest" href="manifest.json">
 
     <style>
         :root {
-            --primary: #2563eb;
-            --secondary: #64748b;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
+            /* Palette Dark Mode - Foco em contraste e legibilidade */
+            --bg: #0f172a;        /* Slate 950 */
+            --card: #1e293b;      /* Slate 800 */
+            --primary: #3b82f6;   /* Blue 500 */
+            --secondary: #94a3b8; /* Slate 400 */
+            --danger: #ef4444;    /* Red 500 */
+            --success: #22c55e;   /* Green 500 */
+            --warning: #f59e0b;   /* Amber 500 */
+            --text: #f1f5f9;      /* Slate 100 */
+            --border: #334155;    /* Slate 700 */
+            --input-bg: #1e293b;
         }
 
         * { 
@@ -30,7 +33,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -51,14 +54,15 @@
             color: var(--text);
             font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .module {
             background: var(--card);
             border-radius: 12px;
             margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
             overflow: hidden;
         }
 
@@ -70,10 +74,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        .module-header:active { filter: brightness(0.9); }
+        .module-header:active { filter: brightness(0.8); }
 
         .module-content {
             display: none;
@@ -94,9 +98,11 @@
         
         input {
             padding: 12px;
-            border: 1px solid #cbd5e1;
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 16px;
+            color: var(--text);
             outline: none;
             width: 100%;
         }
@@ -126,8 +132,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
             gap: 10px;
         }
 
@@ -137,14 +143,14 @@
         .item-name { font-weight: 600; font-size: 1.05rem; display: block; }
         .item-qty { font-size: 0.85rem; color: var(--secondary); }
 
-        .actions { display: flex; gap: 6px; }
+        .actions { display: flex; gap: 8px; }
 
         .btn-delete, .btn-edit, .btn-save {
             border: none;
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 8px 14px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             color: white;
             cursor: pointer;
         }
@@ -154,36 +160,32 @@
         .btn-save { background-color: var(--primary); }
 
         .badge {
-            background: rgba(255,255,255,0.25);
-            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
         }
 
         #installBtn {
             position: fixed;
-            bottom: 20px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: #000;
-            color: white;
-            padding: 12px 24px;
+            background: var(--text);
+            color: var(--bg);
+            padding: 12px 28px;
             border-radius: 30px;
             display: none;
             border: none;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-weight: 800;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
 
         .edit-fields {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             flex-grow: 1;
-        }
-        .edit-fields input {
-            padding: 6px;
-            font-size: 14px;
         }
     </style>
 </head>
@@ -192,7 +194,7 @@
 <div class="container">
     <h1>LISTA DE COMPRAS</h1>
 
-    <!-- COMIDA -->
+    <!-- MÓDULO COMIDA -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('comida')">
             <span>🍎 COMIDA</span>
@@ -208,7 +210,7 @@
         </div>
     </div>
 
-    <!-- HIGIENE -->
+    <!-- MÓDULO HIGIENE -->
     <div class="module">
         <div class="module-header" onclick="toggleModule('higiene')">
             <span>🧼 HIGIENE E LIMPEZA</span>
@@ -225,10 +227,10 @@
     </div>
 </div>
 
-<button id="installBtn">INSTALAR APLICATIVO</button>
+<button id="installBtn">INSTALAR APP</button>
 
 <script>
-    const DB_KEY = 'andre_shopping_v4';
+    const DB_KEY = 'andre_shopping_dark_v1';
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { comida: [], higiene: [] };
     let editId = null;
 
@@ -307,8 +309,8 @@
                             <span class="item-qty">Qtd: ${item.qty}</span>
                         </div>
                         <div class="actions">
-                            <button class="btn-edit" onclick="startEdit(${item.id})">EDITAR</button>
-                            <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">EXCLUIR</button>
+                            <button class="btn-edit" onclick="startEdit(${item.id})">✏️</button>
+                            <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
                         </div>
                     `;
                 }
@@ -318,16 +320,16 @@
         });
     }
 
-    // PWA: Registro do Service Worker formal
+    // Registro do Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker: Ativo'))
-            .catch(err => console.log('Service Worker: Erro', err));
+            .then(reg => console.log('SW: Ativo'))
+            .catch(err => console.log('SW: Erro', err));
         });
     }
 
-    // Prompt de Instalação
+    // Instalação PWA
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
