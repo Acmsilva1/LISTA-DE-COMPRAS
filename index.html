@@ -161,7 +161,17 @@
     
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
 
-    // PUXAR DADOS DA PLANILHA (Executa o doGet do GAS)
+    async function syncWithSheets(cat, item) {
+        try {
+            await fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category: cat, ...item })
+            });
+        } catch (e) { console.error('Erro no item:', item.name); }
+    }
+
     async function pullFromSheets() {
         const btn = document.getElementById('btn-sync-all');
         btn.innerText = '⌛';
@@ -172,8 +182,9 @@
             if (remoteData && remoteData.length > 0) {
                 const newDb = { mantimentos: [], carnes: [], higiene: [], feira: [] };
                 remoteData.forEach(item => {
-                    if (newDb[item.category]) {
-                        newDb[item.category].push({
+                    const catKey = item.category.toLowerCase();
+                    if (newDb[catKey]) {
+                        newDb[catKey].push({
                             id: Date.now() + Math.random(),
                             name: item.name,
                             qty: item.qty,
@@ -183,37 +194,32 @@
                 });
                 db = newDb;
                 save();
+                alert("Dados baixados com sucesso!");
             }
-        } catch (e) { console.error('Erro ao baixar dados'); }
+        } catch (e) { alert("Erro ao buscar dados na nuvem."); }
         btn.innerText = '☁️';
     }
 
-    // ENVIAR DADOS (Executa o doPost do GAS)
-    async function syncWithSheets(cat, item) {
-        try {
-            fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category: cat, ...item })
-            });
-        } catch (e) { console.error('Offline'); }
-    }
-
-    // Ação Nuvem: Pergunta se quer Subir ou Baixar
     async function syncAllExistingData() {
-        const op = confirm("OK: Enviar itens para Planilha\nCANCELAR: Puxar itens da Planilha");
+        const op = confirm("OK: Enviar LOCAL -> NUVEM\nCANCELAR: Baixar NUVEM -> LOCAL");
         if (op) {
             const btn = document.getElementById('btn-sync-all');
             btn.innerText = '⌛';
+            btn.disabled = true;
+
+            // Loop explícito por todas as categorias para garantir que nenhuma fique para trás
             for (const cat of CATEGORIES) {
+                console.log(`Sincronizando categoria: ${cat}`);
                 for (const item of db[cat]) {
                     await syncWithSheets(cat, item);
-                    await new Promise(r => setTimeout(r, 250)); 
+                    // Delay maior (400ms) para não estourar o limite do Google Apps Script
+                    await new Promise(r => setTimeout(r, 400)); 
                 }
             }
             btn.innerText = '✅';
+            btn.disabled = false;
             setTimeout(() => btn.innerText = '☁️', 2000);
+            alert("Sincronização de todas as categorias finalizada!");
         } else {
             pullFromSheets();
         }
@@ -259,14 +265,14 @@
     }
 
     function resetAllData() {
-        if (confirm("Apagar todos os itens locais?")) {
+        if (confirm("Apagar TUDO do celular?")) {
             db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
             save();
         }
     }
 
     function resetChecks() {
-        if (confirm("Desmarcar todos os itens?")) {
+        if (confirm("Desmarcar todos?")) {
             CATEGORIES.forEach(cat => db[cat] = db[cat].map(i => ({...i, checked: false})));
             save();
         }
@@ -302,13 +308,11 @@
 
     render();
 
-    // Tenta carregar da planilha se o app estiver vazio
     window.addEventListener('load', () => {
         const isEmpty = CATEGORIES.every(cat => db[cat].length === 0);
         if (isEmpty) pullFromSheets();
-        
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log('Offline mode'));
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('Offline ok'));
         }
     });
 </script>
