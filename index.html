@@ -45,9 +45,8 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .header h1 { font-size: 1.2rem; margin: 0; font-weight: 700; color: var(--primary); }
-
-        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .header h1 { font-size: 1.1rem; margin: 0; font-weight: 700; color: var(--primary); }
+        .header-actions { display: flex; gap: 18px; align-items: center; }
 
         .module { margin-bottom: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         .module-header { background: var(--card); padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -73,13 +72,10 @@
         .item-name { font-weight: 500; }
         .item-qty { font-size: 0.8rem; color: var(--secondary); }
 
-        .actions { display: flex; gap: 8px; }
-        .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2rem; }
-        .btn-edit { background: none; border: none; color: var(--warning); font-size: 1.2rem; }
-
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid var(--border); z-index: 1000; }
         .nav-btn { background: none; border: none; color: var(--secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; }
         .nav-btn.active { color: var(--primary); }
+        .nav-btn.danger { color: var(--danger); }
     </style>
 </head>
 <body>
@@ -87,8 +83,9 @@
     <div class="header">
         <h1>LISTA DE COMPRAS</h1>
         <div class="header-actions">
-            <button id="btn-sync-all" class="nav-btn" onclick="syncAllExistingData()" title="Sincronizar com Planilha">☁️</button>
-            <button class="nav-btn" onclick="resetChecks()" title="Limpar marcados">🔄</button>
+            <button id="btn-sync-all" class="nav-btn" onclick="syncAllExistingData()" title="Sincronizar Planilha">☁️</button>
+            <button class="nav-btn" onclick="resetChecks()" title="Desmarcar todos">🔄</button>
+            <button class="nav-btn danger" onclick="resetAllData()" title="Limpar tudo">🗑️</button>
         </div>
     </div>
 
@@ -154,7 +151,8 @@
 
     <div class="nav-bar">
         <button class="nav-btn active" onclick="closeAllModules()">🏠 Início</button>
-        <button class="nav-btn" onclick="resetAllData()">🗑️ Limpar Banco</button>
+        <span style="color: var(--border)">|</span>
+        <button class="nav-btn" onclick="location.reload()">🔃 Atualizar App</button>
     </div>
 
 <script>
@@ -163,8 +161,8 @@
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
     
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
-    let editId = null;
 
+    // Sincronização GAS
     async function syncWithSheets(cat, item) {
         try {
             fetch(GAS_URL, {
@@ -173,38 +171,45 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category: cat, ...item })
             });
-        } catch (e) { console.error('Erro GAS:', e); }
+        } catch (e) { console.error('Offline ou Erro GAS'); }
     }
 
+    // Ação 3: Sincronização em Massa
     async function syncAllExistingData() {
         const btn = document.getElementById('btn-sync-all');
-        if (!confirm("Enviar todos os itens atuais para a planilha?")) return;
+        if (!confirm("Deseja enviar todos os itens atuais para a planilha?")) return;
         
         btn.innerText = '⌛';
-        btn.style.opacity = '0.5';
+        btn.style.pointerEvents = 'none';
 
         for (const cat of CATEGORIES) {
             for (const item of db[cat]) {
                 await syncWithSheets(cat, item);
-                await new Promise(r => setTimeout(r, 300)); 
+                await new Promise(r => setTimeout(r, 250)); 
             }
         }
 
         btn.innerText = '✅';
-        setTimeout(() => { btn.innerText = '☁️'; btn.style.opacity = '1'; }, 2000);
-        alert("Sincronização em massa finalizada!");
+        setTimeout(() => { btn.innerText = '☁️'; btn.style.pointerEvents = 'auto'; }, 2000);
     }
 
-    function toggleModule(id) {
-        const el = document.getElementById(id);
-        const isOpen = el.classList.contains('open');
-        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
-        if (!isOpen) el.classList.add('open');
+    // Ação 1: Reset Total
+    function resetAllData() {
+        if (confirm("ATENÇÃO: Isso apagará TODOS os itens do seu celular. Continuar?")) {
+            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+            save();
+            closeAllModules();
+        }
     }
 
-    function closeAllModules() {
-        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Ação 2: Desmarcar Checks
+    function resetChecks() {
+        if (confirm("Deseja desmarcar todos os itens da lista?")) {
+            CATEGORIES.forEach(cat => {
+                db[cat] = db[cat].map(item => ({ ...item, checked: false }));
+            });
+            save();
+        }
     }
 
     function createItem(cat) {
@@ -237,20 +242,15 @@
         save();
     }
 
-    function resetAllData() {
-        if (confirm("Apagar todos os dados do App?")) {
-            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
-            save();
-        }
+    function toggleModule(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.contains('open');
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+        if (!isOpen) el.classList.add('open');
     }
 
-    function resetChecks() {
-        if (confirm("Deseja desmarcar todos os itens da lista?")) {
-            CATEGORIES.forEach(cat => {
-                db[cat] = db[cat].map(item => ({ ...item, checked: false }));
-            });
-            save();
-        }
+    function closeAllModules() {
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
     }
 
     function save() {
@@ -274,9 +274,7 @@
                         <span class="item-name">${item.name}</span>
                         <span class="item-qty">Qtd: ${item.qty}</span>
                     </div>
-                    <div class="actions">
-                        <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
-                    </div>
+                    <button class="btn-delete" style="background:none; border:none; color:var(--danger); font-size:1.2rem" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
                 `;
                 listElement.appendChild(li);
             });
@@ -288,7 +286,7 @@
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW offline'));
+            navigator.serviceWorker.register('./sw.js').catch(() => console.log('Offline mode'));
         });
     }
 </script>
