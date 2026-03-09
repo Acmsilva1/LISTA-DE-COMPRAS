@@ -34,286 +34,202 @@
             color: var(--text);
             margin: 0;
             padding: 16px;
-            padding-bottom: 80px;
-            line-height: 1.5;
-            user-select: none;
+            padding-bottom: 100px;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .header-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            margin-bottom: 24px;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 1.5rem;
-            margin: 0 45px;
-            color: var(--text);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-reset-all, .btn-reset-checks {
-            position: absolute;
-            background: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-reset-all { right: 0; border: 2px solid var(--danger); color: var(--danger); }
-        .btn-reset-checks { left: 0; border: 2px solid var(--success); color: var(--success); }
-
-        .btn-reset-all:active { background: var(--danger); color: white; transform: scale(0.9); }
-        .btn-reset-checks:active { background: var(--success); color: white; transform: scale(0.9); }
-
-        .module {
-            background: var(--card);
-            border-radius: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-
-        .module-header {
-            padding: 18px;
-            background: var(--primary);
-            color: white;
-            cursor: pointer;
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 700;
-        }
-
-        .module-header:active { filter: brightness(0.8); }
-
-        .module-content {
-            display: none;
+            margin-bottom: 24px;
+            background: var(--card);
             padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
+        .header h1 { font-size: 1.2rem; margin: 0; font-weight: 700; letter-spacing: 1px; color: var(--primary); }
+
+        .module { margin-bottom: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+        
+        .module-header {
+            background: var(--card);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .module-title { display: flex; align-items: center; gap: 12px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        .badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
+
+        .module-content { display: none; background: #161e2e; padding: 16px; border-top: 1px solid var(--border); }
         .module-content.open { display: block; }
 
-        .form-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .input-item { flex: 2 1 150px; }
-        .input-qty { flex: 1 1 70px; }
-        
-        input[type="text"], input[type="number"] {
-            padding: 12px;
+        .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
+        input {
             background: var(--bg);
             border: 1px solid var(--border);
+            color: white;
+            padding: 12px;
             border-radius: 8px;
-            font-size: 16px;
-            color: var(--text);
             outline: none;
-            width: 100%;
+            font-size: 1rem;
         }
-
         input:focus { border-color: var(--primary); }
 
-        .btn-add {
-            background-color: var(--success);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            flex: 1 1 100%;
-        }
-
-        @media (min-width: 400px) { .btn-add { flex: 0 1 auto; } }
+        .btn-add { background: var(--primary); border: none; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; }
 
         .item-list { list-style: none; padding: 0; margin: 0; }
-
         .item-row {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
-            gap: 10px;
+            background: var(--card);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            gap: 12px;
             transition: opacity 0.3s;
         }
 
         .item-row.checked { opacity: 0.5; }
-        .item-row:last-child { border-bottom: none; }
+        .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
 
         .check-container {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--primary);
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            width: 28px;
-            height: 28px;
-            background: var(--bg);
-            border: 2px solid var(--border);
-            border-radius: 6px;
-            position: relative;
         }
 
-        .check-container.checked { border-color: var(--success); background: rgba(34, 197, 94, 0.1); }
-        .check-container.checked::after { content: '✓'; color: var(--success); font-size: 20px; font-weight: 900; }
+        .check-container.checked::after { content: '✓'; color: var(--primary); font-weight: bold; }
 
-        .item-info { flex-grow: 1; margin-left: 8px; cursor: pointer; }
-        .item-name { font-weight: 600; font-size: 1.05rem; display: block; }
-        .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
-        .item-qty { font-size: 0.85rem; color: var(--secondary); }
+        .item-info { flex: 1; display: flex; flex-direction: column; }
+        .item-name { font-weight: 500; font-size: 1rem; }
+        .item-qty { font-size: 0.8rem; color: var(--secondary); }
 
         .actions { display: flex; gap: 8px; }
+        .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2rem; padding: 4px; }
+        .btn-edit { background: none; border: none; color: var(--warning); font-size: 1.2rem; padding: 4px; }
 
-        .btn-delete, .btn-edit, .btn-save {
-            border: none;
-            border-radius: 6px;
-            padding: 8px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            color: white;
-            cursor: pointer;
-        }
-
-        .btn-delete { background-color: var(--danger); }
-        .btn-edit { background-color: var(--warning); }
-        .btn-save { background-color: var(--primary); }
-
-        .badge {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
-        #homeBtn {
+        .nav-bar {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            border: none;
-            font-size: 24px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
             display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            cursor: pointer;
-            z-index: 1001;
+            justify-content: space-around;
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            z-index: 100;
         }
 
-        .edit-fields { display: flex; gap: 6px; flex-grow: 1; }
+        .nav-btn { background: none; border: none; color: var(--secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; }
+        .nav-btn.active { color: var(--primary); }
+        .nav-btn i { font-size: 1.2rem; }
+
+        .edit-fields { display: flex; gap: 8px; flex: 1; }
+        .btn-save { background: var(--success); border: none; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-area">
-        <button class="btn-reset-checks" onclick="resetChecks()" title="Resetar Marcações">✓</button>
+    <div class="header">
         <h1>LISTA DE COMPRAS</h1>
-        <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Tudo">X</button>
+        <button class="nav-btn" onclick="resetChecks()">🔄</button>
     </div>
 
     <div class="module">
-        <div class="module-header" onclick="toggleModule('mantimentos')">
-            <span>📦 MANTIMENTOS</span>
-            <span class="badge" id="badge-mantimentos">0</span>
+        <div class="module-header" onclick="toggleModule('mod-mantimentos')">
+            <div class="module-title">📦 MANTIMENTOS <span class="badge" id="badge-mantimentos">0</span></div>
+            <span>▼</span>
         </div>
-        <div id="mantimentos" class="module-content">
-            <div class="form-group">
-                <input type="text" id="name-mantimentos" class="input-item" placeholder="Item">
-                <input type="number" id="qty-mantimentos" class="input-qty" placeholder="Qtd" min="1" value="1">
-                <button class="btn-add" onclick="createItem('mantimentos')">ADICIONAR</button>
+        <div id="mod-mantimentos" class="module-content">
+            <div class="input-group">
+                <input type="text" id="name-mantimentos" placeholder="Item..." style="flex: 2">
+                <input type="number" id="qty-mantimentos" value="1" style="flex: 1">
+                <button class="btn-add" onclick="createItem('mantimentos')">+</button>
             </div>
-            <ul id="list-mantimentos" class="item-list"></ul>
-        </div>
-    </div>
-
-    <div class="module">
-        <div class="module-header" onclick="toggleModule('carnes')">
-            <span>🥩 CARNES E DERIVADOS</span>
-            <span class="badge" id="badge-carnes">0</span>
-        </div>
-        <div id="carnes" class="module-content">
-            <div class="form-group">
-                <input type="text" id="name-carnes" class="input-item" placeholder="Item">
-                <input type="number" id="qty-carnes" class="input-qty" placeholder="Qtd" min="1" value="1">
-                <button class="btn-add" onclick="createItem('carnes')">ADICIONAR</button>
-            </div>
-            <ul id="list-carnes" class="item-list"></ul>
+            <ul class="item-list" id="list-mantimentos"></ul>
         </div>
     </div>
 
     <div class="module">
-        <div class="module-header" onclick="toggleModule('higiene')">
-            <span>🧼 HIGIENE E LIMPEZA</span>
-            <span class="badge" id="badge-higiene">0</span>
+        <div class="module-header" onclick="toggleModule('mod-carnes')">
+            <div class="module-title">🥩 CARNES <span class="badge" id="badge-carnes">0</span></div>
+            <span>▼</span>
         </div>
-        <div id="higiene" class="module-content">
-            <div class="form-group">
-                <input type="text" id="name-higiene" class="input-item" placeholder="Item">
-                <input type="number" id="qty-higiene" class="input-qty" placeholder="Qtd" min="1" value="1">
-                <button class="btn-add" onclick="createItem('higiene')">ADICIONAR</button>
+        <div id="mod-carnes" class="module-content">
+            <div class="input-group">
+                <input type="text" id="name-carnes" placeholder="Item..." style="flex: 2">
+                <input type="number" id="qty-carnes" value="1" style="flex: 1">
+                <button class="btn-add" onclick="createItem('carnes')">+</button>
             </div>
-            <ul id="list-higiene" class="item-list"></ul>
+            <ul class="item-list" id="list-carnes"></ul>
         </div>
     </div>
 
     <div class="module">
-        <div class="module-header" onclick="toggleModule('feira')">
-            <span>🥦 FEIRA</span>
-            <span class="badge" id="badge-feira">0</span>
+        <div class="module-header" onclick="toggleModule('mod-higiene')">
+            <div class="module-title">🧼 HIGIENE <span class="badge" id="badge-higiene">0</span></div>
+            <span>▼</span>
         </div>
-        <div id="feira" class="module-content">
-            <div class="form-group">
-                <input type="text" id="name-feira" class="input-item" placeholder="Item">
-                <input type="number" id="qty-feira" class="input-qty" placeholder="Qtd" min="1" value="1">
-                <button class="btn-add" onclick="createItem('feira')">ADICIONAR</button>
+        <div id="mod-higiene" class="module-content">
+            <div class="input-group">
+                <input type="text" id="name-higiene" placeholder="Item..." style="flex: 2">
+                <input type="number" id="qty-higiene" value="1" style="flex: 1">
+                <button class="btn-add" onclick="createItem('higiene')">+</button>
             </div>
-            <ul id="list-feira" class="item-list"></ul>
+            <ul class="item-list" id="list-higiene"></ul>
         </div>
     </div>
-</div>
 
-<button id="homeBtn" onclick="closeAllModules()">🏠</button>
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('mod-feira')">
+            <div class="module-title">🍎 FEIRA <span class="badge" id="badge-feira">0</span></div>
+            <span>▼</span>
+        </div>
+        <div id="mod-feira" class="module-content">
+            <div class="input-group">
+                <input type="text" id="name-feira" placeholder="Item..." style="flex: 2">
+                <input type="number" id="qty-feira" value="1" style="flex: 1">
+                <button class="btn-add" onclick="createItem('feira')">+</button>
+            </div>
+            <ul class="item-list" id="list-feira"></ul>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="closeAllModules()">🏠 Início</button>
+        <button class="nav-btn" onclick="resetAllData()">🗑️ Limpar Tudo</button>
+    </div>
 
 <script>
     const DB_KEY = 'andre_shopping_dark_v1';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz08-qHNRGkh0Kqgl2dlBdcYUGhZNQrGG0wTd9piGQIuO539sr22EV7MAIKdsctJ6rx/exec';
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
     
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
-    
-    if (db.comida) {
-        db.mantimentos = [...(db.mantimentos || []), ...(db.comida || [])];
-        delete db.comida;
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
-    }
-    
     let editId = null;
+
+    async function syncWithSheets(cat, item) {
+        try {
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category: cat, ...item })
+            });
+        } catch (e) {
+            console.error('Erro de conexão:', e);
+        }
+    }
 
     function toggleModule(id) {
         const el = document.getElementById(id);
@@ -328,7 +244,7 @@
     }
 
     function resetAllData() {
-        if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
+        if (confirm("Deseja apagar todos os dados locais?")) {
             db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
             save();
             closeAllModules();
@@ -336,11 +252,9 @@
     }
 
     function resetChecks() {
-        if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
+        if (confirm("Desmarcar todos os itens?")) {
             CATEGORIES.forEach(cat => {
-                if (db[cat]) {
-                    db[cat] = db[cat].map(item => ({ ...item, checked: false }));
-                }
+                db[cat] = db[cat].map(item => ({ ...item, checked: false }));
             });
             save();
         }
@@ -351,6 +265,7 @@
         if (item) {
             item.checked = !item.checked;
             save();
+            syncWithSheets(cat, item);
         }
     }
 
@@ -362,16 +277,18 @@
 
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        db[cat].push({ 
-            id: Date.now() + Math.random(), 
+        const newItem = { 
+            id: Date.now(), 
             name: name, 
             qty: qty, 
             checked: false 
-        });
-        
+        };
+
+        db[cat].push(newItem);
         nInput.value = ''; 
         qInput.value = '1';
         save();
+        syncWithSheets(cat, newItem);
     }
 
     function deleteItem(cat, id) {
@@ -394,6 +311,7 @@
         if (item) {
             item.name = newName;
             item.qty = newQty;
+            syncWithSheets(cat, item);
         }
         editId = null;
         save();
@@ -445,12 +363,11 @@
 
     render();
 
-    // Registro do Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW ativo:', reg.scope))
-                .catch(err => console.error('Erro no SW:', err));
+                .then(reg => console.log('SW ativo'))
+                .catch(err => console.error('Erro SW:', err));
         });
     }
 </script>
