@@ -85,7 +85,7 @@
         <div class="header-actions">
             <button id="btn-sync-all" class="nav-btn" onclick="syncAllExistingData()" title="Sincronizar Planilha">☁️</button>
             <button class="nav-btn" onclick="resetChecks()" title="Desmarcar todos">🔄</button>
-            <button class="nav-btn danger" onclick="resetAllData()" title="Limpar tudo">🗑️</button>
+            <button class="nav-btn danger" onclick="resetAllData()" title="Limpar Banco Local">🗑️</button>
         </div>
     </div>
 
@@ -151,8 +151,7 @@
 
     <div class="nav-bar">
         <button class="nav-btn active" onclick="closeAllModules()">🏠 Início</button>
-        <span style="color: var(--border)">|</span>
-        <button class="nav-btn" onclick="location.reload()">🔃 Atualizar App</button>
+        <button class="nav-btn" onclick="location.reload()">🔃 Atualizar</button>
     </div>
 
 <script>
@@ -162,7 +161,34 @@
     
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
 
-    // Sincronização GAS
+    // PUXAR DADOS DA PLANILHA (Executa o doGet do GAS)
+    async function pullFromSheets() {
+        const btn = document.getElementById('btn-sync-all');
+        btn.innerText = '⌛';
+        try {
+            const response = await fetch(GAS_URL);
+            const remoteData = await response.json();
+            
+            if (remoteData && remoteData.length > 0) {
+                const newDb = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+                remoteData.forEach(item => {
+                    if (newDb[item.category]) {
+                        newDb[item.category].push({
+                            id: Date.now() + Math.random(),
+                            name: item.name,
+                            qty: item.qty,
+                            checked: item.checked
+                        });
+                    }
+                });
+                db = newDb;
+                save();
+            }
+        } catch (e) { console.error('Erro ao baixar dados'); }
+        btn.innerText = '☁️';
+    }
+
+    // ENVIAR DADOS (Executa o doPost do GAS)
     async function syncWithSheets(cat, item) {
         try {
             fetch(GAS_URL, {
@@ -171,45 +197,37 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category: cat, ...item })
             });
-        } catch (e) { console.error('Offline ou Erro GAS'); }
+        } catch (e) { console.error('Offline'); }
     }
 
-    // Ação 3: Sincronização em Massa
+    // Ação Nuvem: Pergunta se quer Subir ou Baixar
     async function syncAllExistingData() {
-        const btn = document.getElementById('btn-sync-all');
-        if (!confirm("Deseja enviar todos os itens atuais para a planilha?")) return;
-        
-        btn.innerText = '⌛';
-        btn.style.pointerEvents = 'none';
-
-        for (const cat of CATEGORIES) {
-            for (const item of db[cat]) {
-                await syncWithSheets(cat, item);
-                await new Promise(r => setTimeout(r, 250)); 
+        const op = confirm("OK: Enviar itens para Planilha\nCANCELAR: Puxar itens da Planilha");
+        if (op) {
+            const btn = document.getElementById('btn-sync-all');
+            btn.innerText = '⌛';
+            for (const cat of CATEGORIES) {
+                for (const item of db[cat]) {
+                    await syncWithSheets(cat, item);
+                    await new Promise(r => setTimeout(r, 250)); 
+                }
             }
-        }
-
-        btn.innerText = '✅';
-        setTimeout(() => { btn.innerText = '☁️'; btn.style.pointerEvents = 'auto'; }, 2000);
-    }
-
-    // Ação 1: Reset Total
-    function resetAllData() {
-        if (confirm("ATENÇÃO: Isso apagará TODOS os itens do seu celular. Continuar?")) {
-            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
-            save();
-            closeAllModules();
+            btn.innerText = '✅';
+            setTimeout(() => btn.innerText = '☁️', 2000);
+        } else {
+            pullFromSheets();
         }
     }
 
-    // Ação 2: Desmarcar Checks
-    function resetChecks() {
-        if (confirm("Deseja desmarcar todos os itens da lista?")) {
-            CATEGORIES.forEach(cat => {
-                db[cat] = db[cat].map(item => ({ ...item, checked: false }));
-            });
-            save();
-        }
+    function toggleModule(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.contains('open');
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+        if (!isOpen) el.classList.add('open');
+    }
+
+    function closeAllModules() {
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
     }
 
     function createItem(cat) {
@@ -217,13 +235,11 @@
         const qInput = document.getElementById(`qty-${cat}`);
         const name = nInput.value.trim();
         const qty = parseInt(qInput.value);
-
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        const newItem = { id: Date.now(), name, qty, checked: false };
+        const newItem = { id: Date.now() + Math.random(), name, qty, checked: false };
         db[cat].push(newItem);
-        nInput.value = ''; 
-        qInput.value = '1';
+        nInput.value = ''; qInput.value = '1';
         save();
         syncWithSheets(cat, newItem);
     }
@@ -242,15 +258,18 @@
         save();
     }
 
-    function toggleModule(id) {
-        const el = document.getElementById(id);
-        const isOpen = el.classList.contains('open');
-        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
-        if (!isOpen) el.classList.add('open');
+    function resetAllData() {
+        if (confirm("Apagar todos os itens locais?")) {
+            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+            save();
+        }
     }
 
-    function closeAllModules() {
-        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+    function resetChecks() {
+        if (confirm("Desmarcar todos os itens?")) {
+            CATEGORIES.forEach(cat => db[cat] = db[cat].map(i => ({...i, checked: false})));
+            save();
+        }
     }
 
     function save() {
@@ -263,7 +282,6 @@
             const listElement = document.getElementById(`list-${cat}`);
             const badgeElement = document.getElementById(`badge-${cat}`);
             if(!listElement) return;
-            
             listElement.innerHTML = '';
             db[cat].forEach(item => {
                 const li = document.createElement('li');
@@ -284,11 +302,15 @@
 
     render();
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(() => console.log('Offline mode'));
-        });
-    }
+    // Tenta carregar da planilha se o app estiver vazio
+    window.addEventListener('load', () => {
+        const isEmpty = CATEGORIES.every(cat => db[cat].length === 0);
+        if (isEmpty) pullFromSheets();
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('Offline mode'));
+        }
+    });
 </script>
 </body>
 </html>
