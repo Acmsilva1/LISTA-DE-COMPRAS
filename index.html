@@ -23,10 +23,7 @@
             --border: #334155;
         }
 
-        * { 
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -48,19 +45,10 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .header h1 { font-size: 1.2rem; margin: 0; font-weight: 700; letter-spacing: 1px; color: var(--primary); }
+        .header h1 { font-size: 1.2rem; margin: 0; font-weight: 700; color: var(--primary); }
 
         .module { margin-bottom: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        
-        .module-header {
-            background: var(--card);
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-
+        .module-header { background: var(--card); padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .module-title { display: flex; align-items: center; gap: 12px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
         .badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
 
@@ -68,81 +56,38 @@
         .module-content.open { display: block; }
 
         .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
-        input {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            outline: none;
-            font-size: 1rem;
-        }
-        input:focus { border-color: var(--primary); }
-
+        input { background: var(--bg); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; outline: none; font-size: 1rem; }
         .btn-add { background: var(--primary); border: none; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; }
 
         .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-row {
-            display: flex;
-            align-items: center;
-            background: var(--card);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            gap: 12px;
-            transition: opacity 0.3s;
-        }
-
+        .item-row { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 8px; margin-bottom: 8px; gap: 12px; }
         .item-row.checked { opacity: 0.5; }
         .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
 
-        .check-container {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--primary);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
+        .check-container { width: 24px; height: 24px; border: 2px solid var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .check-container.checked::after { content: '✓'; color: var(--primary); font-weight: bold; }
 
         .item-info { flex: 1; display: flex; flex-direction: column; }
-        .item-name { font-weight: 500; font-size: 1rem; }
+        .item-name { font-weight: 500; }
         .item-qty { font-size: 0.8rem; color: var(--secondary); }
 
         .actions { display: flex; gap: 8px; }
-        .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2rem; padding: 4px; }
-        .btn-edit { background: none; border: none; color: var(--warning); font-size: 1.2rem; padding: 4px; }
+        .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2rem; }
+        .btn-edit { background: none; border: none; color: var(--warning); font-size: 1.2rem; }
 
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px;
-            border-top: 1px solid var(--border);
-            z-index: 100;
-        }
-
-        .nav-btn { background: none; border: none; color: var(--secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid var(--border); }
+        .nav-btn { background: none; border: none; color: var(--secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; }
         .nav-btn.active { color: var(--primary); }
-        .nav-btn i { font-size: 1.2rem; }
-
-        .edit-fields { display: flex; gap: 8px; flex: 1; }
-        .btn-save { background: var(--success); border: none; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>LISTA DE COMPRAS</h1>
-        <button class="nav-btn" onclick="resetChecks()">🔄</button>
+        <div style="display: flex; gap: 15px;">
+            <button id="btn-sync-all" class="nav-btn" onclick="syncAllExistingData()" title="Sincronizar tudo com a Planilha">☁️</button>
+            <button class="nav-btn" onclick="resetChecks()">🔄</button>
+        </div>
     </div>
 
     <div class="module">
@@ -218,6 +163,7 @@
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
     let editId = null;
 
+    // Sincronização individual
     async function syncWithSheets(cat, item) {
         try {
             fetch(GAS_URL, {
@@ -226,9 +172,27 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category: cat, ...item })
             });
-        } catch (e) {
-            console.error('Erro de conexão:', e);
+        } catch (e) { console.error('Erro de rede:', e); }
+    }
+
+    // Sincronização em massa para itens já existentes
+    async function syncAllExistingData() {
+        const btn = document.getElementById('btn-sync-all');
+        if (!confirm("Enviar todos os itens atuais para a planilha?")) return;
+        
+        btn.innerText = '⌛';
+        btn.style.opacity = '0.5';
+
+        for (const cat of CATEGORIES) {
+            for (const item of db[cat]) {
+                await syncWithSheets(cat, item);
+                await new Promise(r => setTimeout(r, 300)); // Delay para evitar gargalo no Google
+            }
         }
+
+        btn.innerText = '✅';
+        setTimeout(() => { btn.innerText = '☁️'; btn.style.opacity = '1'; }, 2000);
+        alert("Sincronização concluída!");
     }
 
     function toggleModule(id) {
@@ -243,21 +207,20 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function resetAllData() {
-        if (confirm("Deseja apagar todos os dados locais?")) {
-            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
-            save();
-            closeAllModules();
-        }
-    }
+    function createItem(cat) {
+        const nInput = document.getElementById(`name-${cat}`);
+        const qInput = document.getElementById(`qty-${cat}`);
+        const name = nInput.value.trim();
+        const qty = parseInt(qInput.value);
 
-    function resetChecks() {
-        if (confirm("Desmarcar todos os itens?")) {
-            CATEGORIES.forEach(cat => {
-                db[cat] = db[cat].map(item => ({ ...item, checked: false }));
-            });
-            save();
-        }
+        if (!name || isNaN(qty) || qty <= 0) return;
+
+        const newItem = { id: Date.now(), name, qty, checked: false };
+        db[cat].push(newItem);
+        nInput.value = ''; 
+        qInput.value = '1';
+        save();
+        syncWithSheets(cat, newItem);
     }
 
     function toggleCheck(cat, id) {
@@ -269,52 +232,23 @@
         }
     }
 
-    function createItem(cat) {
-        const nInput = document.getElementById(`name-${cat}`);
-        const qInput = document.getElementById(`qty-${cat}`);
-        const name = nInput.value.trim();
-        const qty = parseInt(qInput.value);
-
-        if (!name || isNaN(qty) || qty <= 0) return;
-
-        const newItem = { 
-            id: Date.now(), 
-            name: name, 
-            qty: qty, 
-            checked: false 
-        };
-
-        db[cat].push(newItem);
-        nInput.value = ''; 
-        qInput.value = '1';
-        save();
-        syncWithSheets(cat, newItem);
-    }
-
     function deleteItem(cat, id) {
         db[cat] = db[cat].filter(i => i.id !== id);
         save();
     }
 
-    function startEdit(id) {
-        editId = id;
-        render();
+    function resetAllData() {
+        if (confirm("Apagar dados locais?")) {
+            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+            save();
+        }
     }
 
-    function saveEdit(cat, id) {
-        const newName = document.getElementById(`edit-n-${id}`).value.trim();
-        const newQty = parseInt(document.getElementById(`edit-q-${id}`).value);
-
-        if (!newName || isNaN(newQty) || newQty <= 0) return;
-
-        const item = db[cat].find(i => i.id === id);
-        if (item) {
-            item.name = newName;
-            item.qty = newQty;
-            syncWithSheets(cat, item);
+    function resetChecks() {
+        if (confirm("Desmarcar todos?")) {
+            CATEGORIES.forEach(cat => db[cat].forEach(i => i.checked = false));
+            save();
         }
-        editId = null;
-        save();
     }
 
     function save() {
@@ -326,35 +260,22 @@
         CATEGORIES.forEach(cat => {
             const listElement = document.getElementById(`list-${cat}`);
             const badgeElement = document.getElementById(`badge-${cat}`);
-            if(!listElement || !badgeElement) return;
+            if(!listElement) return;
             
             listElement.innerHTML = '';
-            
             db[cat].forEach(item => {
                 const li = document.createElement('li');
                 li.className = `item-row ${item.checked ? 'checked' : ''}`;
-                
-                if (editId === item.id) {
-                    li.innerHTML = `
-                        <div class="edit-fields">
-                            <input type="text" id="edit-n-${item.id}" value="${item.name}" style="flex:2">
-                            <input type="number" id="edit-q-${item.id}" value="${item.qty}" style="flex:1">
-                        </div>
-                        <button class="btn-save" onclick="saveEdit('${cat}', ${item.id})">OK</button>
-                    `;
-                } else {
-                    li.innerHTML = `
-                        <div class="check-container ${item.checked ? 'checked' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
-                        <div class="item-info" onclick="toggleCheck('${cat}', ${item.id})">
-                            <span class="item-name">${item.name}</span>
-                            <span class="item-qty">Qtd: ${item.qty}</span>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-edit" onclick="startEdit(${item.id})">✏️</button>
-                            <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
-                        </div>
-                    `;
-                }
+                li.innerHTML = `
+                    <div class="check-container ${item.checked ? 'checked' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
+                    <div class="item-info" onclick="toggleCheck('${cat}', ${item.id})">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-qty">Qtd: ${item.qty}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
+                    </div>
+                `;
                 listElement.appendChild(li);
             });
             badgeElement.innerText = db[cat].length;
@@ -365,9 +286,7 @@
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW ativo'))
-                .catch(err => console.error('Erro SW:', err));
+            navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
         });
     }
 </script>
