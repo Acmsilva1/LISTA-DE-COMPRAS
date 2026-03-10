@@ -261,7 +261,7 @@
     <div class="header-area">
         <button class="btn-reset-checks" onclick="resetChecks()" title="Resetar Marcações">✓</button>
         <h1>LISTA DE COMPRAS</h1>
-        <button class="btn-sync" onclick="syncFromCloud()" title="Sincronizar com a nuvem">⟳</button>
+        <button class="btn-sync" onclick="loadFromLocal()" title="Recarregar Dados">⟳</button>
         <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Tudo">X</button>
     </div>
 
@@ -329,7 +329,7 @@
 <button id="homeBtn" onclick="closeAllModules()">🏠</button>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/SEU_WEB_APP_URL/exec'; // TROQUE PELO SEU LINK DO GAS
+    const STORAGE_KEY = 'lista_compras_db';
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
     
     let db = {
@@ -341,21 +341,17 @@
     
     let editId = null;
 
-    async function apiGet(params) {
-        const url = API_URL + '?' + new URLSearchParams(params).toString();
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Erro na comunicação com o servidor (GET)');
-        return res.json();
+    function saveToLocal() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        render();
     }
 
-    async function apiPost(body) {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        if (!res.ok) throw new Error('Erro na comunicação com o servidor (POST)');
-        return res.json();
+    function loadFromLocal() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+            db = JSON.parse(data);
+        }
+        render();
     }
 
     function toggleModule(id) {
@@ -370,41 +366,32 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    async function resetAllData() {
-        if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
-            try {
-                await apiPost({ action: 'resetAll' });
-                await loadFromCloud();
-                closeAllModules();
-            } catch (e) {
-                alert('Erro ao limpar dados na nuvem.');
-            }
+    function resetAllData() {
+        if (confirm("Deseja apagar TODOS os itens? Operação irreversível localmente.")) {
+            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+            saveToLocal();
+            closeAllModules();
         }
     }
 
-    async function resetChecks() {
-        if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
-            try {
-                await apiPost({ action: 'resetChecks' });
-                await loadFromCloud();
-            } catch (e) {
-                alert('Erro ao resetar marcações na nuvem.');
-            }
+    function resetChecks() {
+        if (confirm("Deseja desmarcar todos os itens comprados?")) {
+            CATEGORIES.forEach(cat => {
+                db[cat].forEach(item => item.checked = false);
+            });
+            saveToLocal();
         }
     }
 
-    async function toggleCheck(cat, id) {
+    function toggleCheck(cat, id) {
         const item = db[cat].find(i => i.id === id);
-        if (!item) return;
-        try {
-            await apiPost({ action: 'toggle', row: id });
-            await loadFromCloud();
-        } catch (e) {
-            alert('Erro ao atualizar status na nuvem.');
+        if (item) {
+            item.checked = !item.checked;
+            saveToLocal();
         }
     }
 
-    async function createItem(cat) {
+    function createItem(cat) {
         const nInput = document.getElementById(`name-${cat}`);
         const qInput = document.getElementById(`qty-${cat}`);
         const name = nInput.value.trim();
@@ -412,30 +399,22 @@
 
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        try {
-            await apiPost({
-                action: 'create',
-                category: cat,
-                name: name,
-                qty: qty
-            });
+        const newItem = {
+            id: Date.now(), // ID único baseado em timestamp
+            name: name,
+            qty: qty,
+            checked: false
+        };
 
-            nInput.value = '';
-            qInput.value = '1';
-
-            await loadFromCloud();
-        } catch (e) {
-            alert('Erro ao criar item na nuvem.');
-        }
+        db[cat].push(newItem);
+        nInput.value = '';
+        qInput.value = '1';
+        saveToLocal();
     }
 
-    async function deleteItem(cat, id) {
-        try {
-            await apiPost({ action: 'delete', row: id });
-            await loadFromCloud();
-        } catch (e) {
-            alert('Erro ao excluir item na nuvem.');
-        }
+    function deleteItem(cat, id) {
+        db[cat] = db[cat].filter(i => i.id !== id);
+        saveToLocal();
     }
 
     function startEdit(id) {
@@ -443,69 +422,18 @@
         render();
     }
 
-    async function saveEdit(cat, id) {
+    function saveEdit(cat, id) {
         const newName = document.getElementById(`edit-n-${id}`).value.trim();
         const newQty = parseInt(document.getElementById(`edit-q-${id}`).value, 10);
 
         if (!newName || isNaN(newQty) || newQty <= 0) return;
 
-        try {
-            await apiPost({
-                action: 'update',
-                row: id,
-                name: newName,
-                qty: newQty
-            });
+        const item = db[cat].find(i => i.id === id);
+        if (item) {
+            item.name = newName;
+            item.qty = newQty;
             editId = null;
-            await loadFromCloud();
-        } catch (e) {
-            alert('Erro ao salvar edição na nuvem.');
-        }
-    }
-
-    function mapCloudToLocal(items) {
-        db = {
-            mantimentos: [],
-            carnes: [],
-            higiene: [],
-            feira: []
-        };
-
-        items.forEach(row => {
-            const cat = row.category;
-            if (!CATEGORIES.includes(cat)) return;
-
-            const checked = (row.status || '').toLowerCase() === 'comprado';
-
-            db[cat].push({
-                id: row.row,
-                name: row.item,
-                qty: row.qty,
-                checked: checked
-            });
-        });
-
-        render();
-    }
-
-    async function loadFromCloud() {
-        try {
-            const data = await apiGet({ action: 'list' });
-            if (data && data.success) {
-                mapCloudToLocal(data.items || []);
-            } else {
-                alert('Falha ao carregar dados da nuvem.');
-            }
-        } catch (e) {
-            alert('Erro ao carregar dados da nuvem.');
-        }
-    }
-
-    async function syncFromCloud() {
-        try {
-            await loadFromCloud();
-        } catch (e) {
-            alert('Erro ao sincronizar com a nuvem.');
+            saveToLocal();
         }
     }
 
@@ -548,17 +476,18 @@
         });
     }
 
-    // Carrega da nuvem ao abrir a página
-    loadFromCloud();
+    // Inicialização
+    loadFromLocal();
 
-    // Registro do Service Worker
+    // Service Worker para PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW ativo:', reg.scope))
-                .catch(err => console.error('Erro no SW:', err));
+                .then(reg => console.log('Offline Ready'))
+                .catch(err => console.error('SW Fail:', err));
         });
     }
 </script>
+
 </body>
 </html>
