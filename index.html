@@ -329,7 +329,7 @@
 <button id="homeBtn" onclick="closeAllModules()">🏠</button>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyf7omUXb_sbHt8MEy1ldF-XxX7KvpdajxZRubrs3Q5l2BBJxwJJzw8qQTaFFbfBXPTZQ/exec'; // TROQUE PELO SEU LINK DO GAS
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyf7omUXb_sbHt8MEy1ldF-XxX7KvpdajxZRubrs3Q5l2BBJxwJJzw8qQTaFFbfBXPTZQ/exec';
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
     
     let db = {
@@ -341,41 +341,58 @@
     
     let editId = null;
 
-    async function apiGet(params) {
-        const url = API_URL + '?' + new URLSearchParams(params).toString();
-        const res = await fetch(url);
-        const text = await res.text();
-        let data = null;
-        try {
-            data = text ? JSON.parse(text) : null;
-        } catch (_) {
-            throw new Error(`GET falhou (${res.status}) - resposta não JSON: ${text}`);
+    // Chamada JSONP para contornar CORS em GitHub Pages
+    function jsonpRequest(params, onResult) {
+        const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const url = new URL(API_URL);
+        const allParams = { ...params, callback: cbName };
+        Object.keys(allParams).forEach(key => {
+            if (allParams[key] !== undefined && allParams[key] !== null) {
+                url.searchParams.append(key, allParams[key]);
+            }
+        });
+
+        const script = document.createElement('script');
+        script.src = url.toString();
+        script.async = true;
+
+        let timeout = setTimeout(() => {
+            cleanup();
+            onResult(new Error('Timeout na comunicação com o servidor'));
+        }, 10000);
+
+        function cleanup() {
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+            clearTimeout(timeout);
+            try {
+                delete window[cbName];
+            } catch (_) {
+                window[cbName] = undefined;
+            }
         }
-        if (!res.ok) {
-            const errMsg = (data && data.error) || text || `Status HTTP ${res.status}`;
-            throw new Error(`GET falhou (${res.status}): ${errMsg}`);
-        }
-        return data;
+
+        window[cbName] = function (data) {
+            cleanup();
+            onResult(null, data);
+        };
+
+        script.onerror = function () {
+            cleanup();
+            onResult(new Error('Erro de rede na chamada ao servidor'));
+        };
+
+        document.body.appendChild(script);
     }
 
-    async function apiPost(body) {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+    function apiGetJSONP(params) {
+        return new Promise((resolve, reject) => {
+            jsonpRequest(params, (err, data) => {
+                if (err) return reject(err);
+                resolve(data);
+            });
         });
-        const text = await res.text();
-        let data = null;
-        try {
-            data = text ? JSON.parse(text) : null;
-        } catch (_) {
-            throw new Error(`POST falhou (${res.status}) - resposta não JSON: ${text}`);
-        }
-        if (!res.ok) {
-            const errMsg = (data && data.error) || text || `Status HTTP ${res.status}`;
-            throw new Error(`POST falhou (${res.status}): ${errMsg}`);
-        }
-        return data;
     }
 
     function toggleModule(id) {
@@ -393,7 +410,10 @@
     async function resetAllData() {
         if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
             try {
-                await apiPost({ action: 'resetAll' });
+                const result = await apiGetJSONP({ action: 'resetAll' });
+                if (!result || !result.success) {
+                    throw new Error(result && result.error || 'Falha ao limpar dados na API');
+                }
                 await loadFromCloud();
                 closeAllModules();
             } catch (e) {
@@ -405,7 +425,10 @@
     async function resetChecks() {
         if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
             try {
-                await apiPost({ action: 'resetChecks' });
+                const result = await apiGetJSONP({ action: 'resetChecks' });
+                if (!result || !result.success) {
+                    throw new Error(result && result.error || 'Falha ao resetar marcações na API');
+                }
                 await loadFromCloud();
             } catch (e) {
                 alert('Erro ao resetar marcações na nuvem.');
@@ -417,7 +440,10 @@
         const item = db[cat].find(i => i.id === id);
         if (!item) return;
         try {
-            await apiPost({ action: 'toggle', row: id });
+            const result = await apiGetJSONP({ action: 'toggle', row: id });
+            if (!result || !result.success) {
+                throw new Error(result && result.error || 'Falha ao atualizar status na API');
+            }
             await loadFromCloud();
         } catch (e) {
             alert('Erro ao atualizar status na nuvem.');
@@ -433,15 +459,15 @@
         if (!name || isNaN(qty) || qty <= 0) return;
 
         try {
-            const result = await apiPost({
+            const result = await apiGetJSONP({
                 action: 'create',
                 category: cat,
                 name: name,
-                qty: qty
+                qty: String(qty)
             });
 
-            if (!result.success) {
-                throw new Error(result.error || 'Falha ao criar item na API');
+            if (!result || !result.success) {
+                throw new Error(result && result.error || 'Falha ao criar item na API');
             }
 
             nInput.value = '';
@@ -455,7 +481,10 @@
 
     async function deleteItem(cat, id) {
         try {
-            await apiPost({ action: 'delete', row: id });
+            const result = await apiGetJSONP({ action: 'delete', row: id });
+            if (!result || !result.success) {
+                throw new Error(result && result.error || 'Falha ao excluir item na API');
+            }
             await loadFromCloud();
         } catch (e) {
             alert('Erro ao excluir item na nuvem.');
@@ -474,12 +503,15 @@
         if (!newName || isNaN(newQty) || newQty <= 0) return;
 
         try {
-            await apiPost({
+            const result = await apiGetJSONP({
                 action: 'update',
                 row: id,
                 name: newName,
-                qty: newQty
+                qty: String(newQty)
             });
+            if (!result || !result.success) {
+                throw new Error(result && result.error || 'Falha ao salvar edição na API');
+            }
             editId = null;
             await loadFromCloud();
         } catch (e) {
@@ -514,7 +546,7 @@
 
     async function loadFromCloud() {
         try {
-            const data = await apiGet({ action: 'list' });
+            const data = await apiGetJSONP({ action: 'list' });
             if (data && data.success) {
                 mapCloudToLocal(data.items || []);
             } else {
