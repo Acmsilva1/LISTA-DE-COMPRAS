@@ -3,239 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LISTA DE COMPRAS</title>
-    
+    <title>LISTA DE COMPRAS PRO</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e293b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <style>
-        :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --primary: #3b82f6;
-            --secondary: #94a3b8;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --text: #f1f5f9;
-            --border: #334155;
-        }
-
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #3b82f6; --danger: #ef4444; --success: #22c55e; --text: #f1f5f9; --border: #334155; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 16px;
-            padding-bottom: 100px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            background: var(--card);
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 { font-size: 1.1rem; margin: 0; font-weight: 700; color: var(--primary); }
-        .header-actions { display: flex; gap: 18px; align-items: center; }
-
-        .module { margin-bottom: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        .module-header { background: var(--card); padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .module-title { display: flex; align-items: center; gap: 12px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
-        .badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
-
-        .module-content { display: none; background: #161e2e; padding: 16px; border-top: 1px solid var(--border); }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 80px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .module { background: var(--card); border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; }
+        .module-header { padding: 15px; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; }
+        .module-content { display: none; padding: 15px; background: #161e2e; border-top: 1px solid var(--border); }
         .module-content.open { display: block; }
-
-        .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
-        input { background: var(--bg); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; outline: none; font-size: 1rem; width: 100%; }
-        
-        .btn-add { background: var(--primary); border: none; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; }
-        .btn-save { background: var(--success); border: none; color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
-
-        .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-row { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 8px; margin-bottom: 8px; gap: 12px; }
-        .item-row.checked { opacity: 0.5; }
-        .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
-
-        .check-container { width: 24px; height: 24px; border: 2px solid var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .check-container.checked::after { content: '✓'; color: var(--primary); font-weight: bold; }
-
-        .item-info { flex: 1; display: flex; flex-direction: column; }
-        .item-name { font-weight: 500; }
-        .item-qty { font-size: 0.8rem; color: var(--secondary); }
-
-        .actions { display: flex; gap: 10px; }
-        .btn-edit { background: none; border: none; color: var(--warning); font-size: 1.1rem; }
-        .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.1rem; }
-
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid var(--border); z-index: 1000; }
-        .nav-btn { background: none; border: none; color: var(--secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; }
+        .item-row { display: flex; align-items: center; background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; gap: 10px; }
+        .item-row.checked { opacity: 0.5; text-decoration: line-through; }
+        .check { width: 24px; height: 24px; border: 2px solid var(--primary); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+        .check.active::after { content: '✓'; color: var(--primary); font-weight: bold; }
+        input { background: var(--card); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 5px; width: 100%; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 15px; }
+        button { cursor: pointer; border: none; border-radius: 5px; }
+        .btn-sync { background: var(--primary); color: white; padding: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>LISTA DE COMPRAS</h1>
-        <div class="header-actions">
-            <button id="btn-sync-all" class="nav-btn" onclick="syncAllExistingData()">☁️</button>
-            <button class="nav-btn" onclick="resetChecks()">🔄</button>
-            <button class="nav-btn" onclick="resetAllData()">🗑️</button>
-        </div>
-    </div>
+<div class="header">
+    <h2 style="margin:0; font-size: 1rem;">LISTA DO ANDRÉ</h2>
+    <button class="btn-sync" onclick="syncAll()">☁️ Sincronizar</button>
+</div>
 
-    <div id="categories-container"></div>
+<div id="app"></div>
 
-    <div class="nav-bar">
-        <button class="nav-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">🏠 Início</button>
-        <button class="nav-btn" onclick="location.reload()">🔃 Refresh</button>
-    </div>
+<div class="nav-bar">
+    <button onclick="location.reload()" style="background:none; color:white">🔃 Atualizar App</button>
+    <button onclick="resetChecks()" style="background:none; color:var(--danger)">🔄 Limpar Checks</button>
+</div>
 
 <script>
-    const DB_KEY = 'andre_shopping_dark_v1';
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz08-qHNRGkh0Kqgl2dlBdcYUGhZNQrGG0wTd9piGQIuO539sr22EV7MAIKdsctJ6rx/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz08-qHNRGkh0Kqgl2dlBdcYUGhZNQrGG0wTd9piGQIuO539sr22EV7MAIKdsctJ6rx/exec'; // <--- COLOQUE SUA URL DO GOOGLE AQUI
+    const DB_KEY = 'andre_db_v3';
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
-    const CATEGORY_ICONS = { mantimentos: '📦', carnes: '🥩', higiene: '🧼', feira: '🍎' };
-    
+    const ICONS = { mantimentos: '📦', carnes: '🥩', higiene: '🧼', feira: '🍎' };
+
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
+    let openModules = JSON.parse(localStorage.getItem('open_tabs')) || {};
     let editId = null;
 
-    // ESTADO DAS ABAS: Isso impede que fechem ao renderizar
-    let openModules = {
-        'mod-mantimentos': false,
-        'mod-carnes': false,
-        'mod-higiene': false,
-        'mod-feira': false
-    };
-
-    function toggleModule(id) {
-        openModules[id] = !openModules[id];
-        render(); // Agora o render sabe quem deve ficar aberto
+    function save() {
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        localStorage.setItem('open_tabs', JSON.stringify(openModules));
+        render();
     }
 
-    async function syncWithSheets(cat, item) {
-        try {
-            await fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category: cat, ...item })
-            });
-        } catch (e) { console.error('Offline'); }
+    async function callGAS(payload) {
+        try { await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch(e){}
     }
 
-    function createItem(cat) {
-        const nInput = document.getElementById(`name-${cat}`);
-        const qInput = document.getElementById(`qty-${cat}`);
-        const name = nInput.value.trim();
-        const qty = parseInt(qInput.value);
-        if (!name || isNaN(qty)) return;
-
-        const newItem = { id: Date.now(), name, qty, checked: false };
-        db[cat].push(newItem);
+    function addItem(cat) {
+        const name = document.getElementById(`in-${cat}`).value;
+        if(!name) return;
+        const item = { id: Date.now(), name, qty: 1, checked: false };
+        db[cat].push(item);
+        document.getElementById(`in-${cat}`).value = '';
         save();
-        syncWithSheets(cat, newItem);
+        callGAS({ category: cat, ...item });
     }
 
     function toggleCheck(cat, id) {
         const item = db[cat].find(i => i.id === id);
-        if (item) {
-            item.checked = !item.checked;
-            save();
-            syncWithSheets(cat, item);
-        }
+        item.checked = !item.checked;
+        save();
+        callGAS({ category: cat, ...item });
     }
 
     function deleteItem(cat, id) {
+        const item = db[cat].find(i => i.id === id);
         db[cat] = db[cat].filter(i => i.id !== id);
         save();
+        callGAS({ action: 'DELETE', category: cat, name: item.name });
     }
 
-    function saveEdit(cat, id) {
-        const item = db[cat].find(i => i.id === id);
-        item.name = document.getElementById(`edit-name-${id}`).value;
-        item.qty = document.getElementById(`edit-qty-${id}`).value;
-        editId = null;
-        save();
-        syncWithSheets(cat, item);
-    }
-
-    function save() {
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
-        render();
+    async function syncAll() {
+        const op = confirm("OK: Enviar para Nuvem\nCANCELAR: Baixar da Nuvem");
+        if(op) {
+            alert("Enviando... aguarde.");
+            for (const cat of CATEGORIES) {
+                for (const item of db[cat]) {
+                    await callGAS({ category: cat, ...item });
+                    await new Promise(r => setTimeout(r, 300));
+                }
+            }
+            alert("Enviado!");
+        } else {
+            const res = await fetch(GAS_URL);
+            const data = await res.json();
+            if(data.length > 0) {
+                const newDb = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+                data.forEach(i => { if(newDb[i.category]) newDb[i.category].push({id: Math.random(), ...i}); });
+                db = newDb;
+                save();
+            }
+        }
     }
 
     function render() {
-        const container = document.getElementById('categories-container');
+        const container = document.getElementById('app');
         container.innerHTML = '';
-
         CATEGORIES.forEach(cat => {
-            const modId = `mod-${cat}`;
-            const isOpen = openModules[modId];
-
-            const module = document.createElement('div');
-            module.className = 'module';
-            module.innerHTML = `
-                <div class="module-header" onclick="toggleModule('${modId}')">
-                    <div class="module-title">${CATEGORY_ICONS[cat]} ${cat.toUpperCase()} <span class="badge">${db[cat].length}</span></div>
+            const isOpen = openModules[cat] || false;
+            const mod = document.createElement('div');
+            mod.className = 'module';
+            mod.innerHTML = `
+                <div class="module-header" onclick="openModules['${cat}']=!openModules['${cat}']; save();">
+                    <span>${ICONS[cat]} ${cat.toUpperCase()} (${db[cat].length})</span>
                     <span>${isOpen ? '▲' : '▼'}</span>
                 </div>
-                <div id="${modId}" class="module-content ${isOpen ? 'open' : ''}">
-                    <div class="input-group">
-                        <input type="text" id="name-${cat}" placeholder="Novo item..." style="flex:2">
-                        <input type="number" id="qty-${cat}" value="1" style="flex:1">
-                        <button class="btn-add" onclick="createItem('${cat}')">+</button>
+                <div class="module-content ${isOpen ? 'open' : ''}">
+                    <div style="display:flex; gap:5px; margin-bottom:10px">
+                        <input id="in-${cat}" placeholder="Novo...">
+                        <button onclick="addItem('${cat}')" style="background:var(--primary); color:white; padding:10px">+</button>
                     </div>
-                    <ul class="item-list" id="list-${cat}"></ul>
+                    <div id="list-${cat}"></div>
                 </div>
             `;
-            container.appendChild(module);
+            container.appendChild(mod);
 
-            const listElement = document.getElementById(`list-${cat}`);
+            const list = document.getElementById(`list-${cat}`);
             db[cat].forEach(item => {
-                const li = document.createElement('li');
-                li.className = `item-row ${item.checked ? 'checked' : ''}`;
-                
-                if (editId === item.id) {
-                    li.innerHTML = `
-                        <div class="input-group" style="margin:0; width:100%">
-                            <input type="text" id="edit-name-${item.id}" value="${item.name}" style="flex:2">
-                            <input type="number" id="edit-qty-${item.id}" value="${item.qty}" style="flex:1">
-                            <button class="btn-save" onclick="saveEdit('${cat}', ${item.id})">OK</button>
-                        </div>
-                    `;
-                } else {
-                    li.innerHTML = `
-                        <div class="check-container ${item.checked ? 'checked' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
-                        <div class="item-info" onclick="toggleCheck('${cat}', ${item.id})">
-                            <span class="item-name">${item.name}</span>
-                            <span class="item-qty">Qtd: ${item.qty}</span>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-edit" onclick="editId=${item.id}; render();">✏️</button>
-                            <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
-                        </div>
-                    `;
-                }
-                listElement.appendChild(li);
+                const row = document.createElement('div');
+                row.className = `item-row ${item.checked ? 'checked' : ''}`;
+                row.innerHTML = `
+                    <div class="check ${item.checked ? 'active' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
+                    <div style="flex:1" onclick="toggleCheck('${cat}', ${item.id})">${item.name}</div>
+                    <button onclick="deleteItem('${cat}', ${item.id})" style="background:none; font-size:1.2rem">🗑️</button>
+                `;
+                list.appendChild(row);
             });
         });
     }
 
-    // Funções de sincronização e resets omitidas para brevidade, mas devem ser mantidas do seu código anterior.
-    function resetChecks() { if(confirm("Desmarcar todos?")) { CATEGORIES.forEach(c => db[c].forEach(i => i.checked = false)); save(); } }
-    function resetAllData() { if(confirm("Reset total?")) { db = {mantimentos:[], carnes:[], higiene:[], feira:[]}; save(); } }
+    function resetChecks() {
+        if(confirm("Limpar todos os checks?")) {
+            CATEGORIES.forEach(cat => db[cat].forEach(i => { i.checked = false; callGAS({category: cat, ...i}); }));
+            save();
+        }
+    }
 
     render();
+    window.addEventListener('load', () => {
+        if(CATEGORIES.every(c => db[c].length === 0)) syncAll();
+    });
 </script>
 </body>
 </html>
