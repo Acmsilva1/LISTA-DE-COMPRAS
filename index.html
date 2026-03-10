@@ -607,6 +607,13 @@
     // Carrega da nuvem ao abrir a página
     loadFromCloud();
 
+    // Atualização automática periódica (quase "tempo real") enquanto a aba estiver visível
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            loadFromCloud();
+        }
+    }, 10000); // a cada 10s; ajuste se quiser mais/menos frequente
+
     // Registro do Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
