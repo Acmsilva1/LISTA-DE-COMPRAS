@@ -302,18 +302,34 @@
 <button id="homeBtn" onclick="closeAllModules()">🏠</button>
 
 <script>
-    const DB_KEY = 'andre_shopping_dark_v1';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyf7omUXb_sbHt8MEy1ldF-XxX7KvpdajxZRubrs3Q5l2BBJxwJJzw8qQTaFFbfBXPTZQ/exec'; // TROQUE PELO SEU LINK
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
-    
-    let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
-    
-    if (db.comida) {
-        db.mantimentos = [...(db.mantimentos || []), ...(db.comida || [])];
-        delete db.comida;
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
-    }
-    
+
+    let db = {
+        mantimentos: [],
+        carnes: [],
+        higiene: [],
+        feira: []
+    };
+
     let editId = null;
+
+    async function apiGet(params) {
+        const url = API_URL + '?' + new URLSearchParams(params).toString();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Erro na comunicação com o servidor (GET)');
+        return res.json();
+    }
+
+    async function apiPost(body) {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Erro na comunicação com o servidor (POST)');
+        return res.json();
+    }
 
     function toggleModule(id) {
         const el = document.getElementById(id);
@@ -327,56 +343,72 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function resetAllData() {
+    async function resetAllData() {
         if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
-            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
-            save();
-            closeAllModules();
+            try {
+                await apiPost({ action: 'resetAll' });
+                await loadFromCloud();
+                closeAllModules();
+            } catch (e) {
+                alert('Erro ao limpar dados na nuvem.');
+            }
         }
     }
 
-    function resetChecks() {
+    async function resetChecks() {
         if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
-            CATEGORIES.forEach(cat => {
-                if (db[cat]) {
-                    db[cat] = db[cat].map(item => ({ ...item, checked: false }));
-                }
-            });
-            save();
+            try {
+                await apiPost({ action: 'resetChecks' });
+                await loadFromCloud();
+            } catch (e) {
+                alert('Erro ao resetar marcações na nuvem.');
+            }
         }
     }
 
-    function toggleCheck(cat, id) {
+    async function toggleCheck(cat, id) {
         const item = db[cat].find(i => i.id === id);
-        if (item) {
-            item.checked = !item.checked;
-            save();
+        if (!item) return;
+        try {
+            await apiPost({ action: 'toggle', row: id });
+            await loadFromCloud();
+        } catch (e) {
+            alert('Erro ao atualizar status na nuvem.');
         }
     }
 
-    function createItem(cat) {
+    async function createItem(cat) {
         const nInput = document.getElementById(`name-${cat}`);
         const qInput = document.getElementById(`qty-${cat}`);
         const name = nInput.value.trim();
-        const qty = parseInt(qInput.value);
+        const qty = parseInt(qInput.value, 10);
 
         if (!name || isNaN(qty) || qty <= 0) return;
 
-        db[cat].push({ 
-            id: Date.now() + Math.random(), 
-            name: name, 
-            qty: qty, 
-            checked: false 
-        });
-        
-        nInput.value = ''; 
-        qInput.value = '1';
-        save();
+        try {
+            await apiPost({
+                action: 'create',
+                category: cat,
+                name: name,
+                qty: qty
+            });
+
+            nInput.value = '';
+            qInput.value = '1';
+
+            await loadFromCloud();
+        } catch (e) {
+            alert('Erro ao criar item na nuvem.');
+        }
     }
 
-    function deleteItem(cat, id) {
-        db[cat] = db[cat].filter(i => i.id !== id);
-        save();
+    async function deleteItem(cat, id) {
+        try {
+            await apiPost({ action: 'delete', row: id });
+            await loadFromCloud();
+        } catch (e) {
+            alert('Erro ao excluir item na nuvem.');
+        }
     }
 
     function startEdit(id) {
@@ -384,38 +416,76 @@
         render();
     }
 
-    function saveEdit(cat, id) {
+    async function saveEdit(cat, id) {
         const newName = document.getElementById(`edit-n-${id}`).value.trim();
-        const newQty = parseInt(document.getElementById(`edit-q-${id}`).value);
+        const newQty = parseInt(document.getElementById(`edit-q-${id}`).value, 10);
 
         if (!newName || isNaN(newQty) || newQty <= 0) return;
 
-        const item = db[cat].find(i => i.id === id);
-        if (item) {
-            item.name = newName;
-            item.qty = newQty;
+        try {
+            await apiPost({
+                action: 'update',
+                row: id,
+                name: newName,
+                qty: newQty
+            });
+            editId = null;
+            await loadFromCloud();
+        } catch (e) {
+            alert('Erro ao salvar edição na nuvem.');
         }
-        editId = null;
-        save();
     }
 
-    function save() {
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
+    function mapCloudToLocal(items) {
+        db = {
+            mantimentos: [],
+            carnes: [],
+            higiene: [],
+            feira: []
+        };
+
+        items.forEach(row => {
+            const cat = row.category;
+            if (!CATEGORIES.includes(cat)) return;
+
+            const checked = (row.status || '').toLowerCase() === 'comprado';
+
+            db[cat].push({
+                id: row.row,
+                name: row.item,
+                qty: row.qty,
+                checked: checked
+            });
+        });
+
         render();
+    }
+
+    async function loadFromCloud() {
+        try {
+            const data = await apiGet({ action: 'list' });
+            if (data && data.success) {
+                mapCloudToLocal(data.items || []);
+            } else {
+                alert('Falha ao carregar dados da nuvem.');
+            }
+        } catch (e) {
+            alert('Erro ao carregar dados da nuvem.');
+        }
     }
 
     function render() {
         CATEGORIES.forEach(cat => {
             const listElement = document.getElementById(`list-${cat}`);
             const badgeElement = document.getElementById(`badge-${cat}`);
-            if(!listElement || !badgeElement) return;
-            
+            if (!listElement || !badgeElement) return;
+
             listElement.innerHTML = '';
-            
+
             db[cat].forEach(item => {
                 const li = document.createElement('li');
                 li.className = `item-row ${item.checked ? 'checked' : ''}`;
-                
+
                 if (editId === item.id) {
                     li.innerHTML = `
                         <div class="edit-fields">
@@ -439,13 +509,15 @@
                 }
                 listElement.appendChild(li);
             });
+
             badgeElement.innerText = db[cat].length;
         });
     }
 
-    render();
+    // Carrega da nuvem ao abrir a página
+    loadFromCloud();
 
-    // Registro do Service Worker
+    // Service Worker (mantido)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
@@ -454,5 +526,6 @@
         });
     }
 </script>
+
 </body>
 </html>
