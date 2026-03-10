@@ -83,6 +83,32 @@
         .btn-reset-all:active { background: var(--danger); color: white; transform: scale(0.9); }
         .btn-reset-checks:active { background: var(--success); color: white; transform: scale(0.9); }
 
+        .btn-sync {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sync:active {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-50%) scale(0.9);
+        }
+
         .module {
             background: var(--card);
             border-radius: 12px;
@@ -235,6 +261,7 @@
     <div class="header-area">
         <button class="btn-reset-checks" onclick="resetChecks()" title="Resetar Marcações">✓</button>
         <h1>LISTA DE COMPRAS</h1>
+        <button class="btn-sync" onclick="syncFromCloud()" title="Sincronizar com a nuvem">⟳</button>
         <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Tudo">X</button>
     </div>
 
@@ -302,16 +329,16 @@
 <button id="homeBtn" onclick="closeAllModules()">🏠</button>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyf7omUXb_sbHt8MEy1ldF-XxX7KvpdajxZRubrs3Q5l2BBJxwJJzw8qQTaFFbfBXPTZQ/exec'; // TROQUE PELO SEU LINK
+    const API_URL = 'https://script.google.com/macros/s/SEU_WEB_APP_URL/exec'; // TROQUE PELO SEU LINK DO GAS
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
-
+    
     let db = {
         mantimentos: [],
         carnes: [],
         higiene: [],
         feira: []
     };
-
+    
     let editId = null;
 
     async function apiGet(params) {
@@ -474,18 +501,26 @@
         }
     }
 
+    async function syncFromCloud() {
+        try {
+            await loadFromCloud();
+        } catch (e) {
+            alert('Erro ao sincronizar com a nuvem.');
+        }
+    }
+
     function render() {
         CATEGORIES.forEach(cat => {
             const listElement = document.getElementById(`list-${cat}`);
             const badgeElement = document.getElementById(`badge-${cat}`);
-            if (!listElement || !badgeElement) return;
-
+            if(!listElement || !badgeElement) return;
+            
             listElement.innerHTML = '';
-
+            
             db[cat].forEach(item => {
                 const li = document.createElement('li');
                 li.className = `item-row ${item.checked ? 'checked' : ''}`;
-
+                
                 if (editId === item.id) {
                     li.innerHTML = `
                         <div class="edit-fields">
@@ -509,7 +544,6 @@
                 }
                 listElement.appendChild(li);
             });
-
             badgeElement.innerText = db[cat].length;
         });
     }
@@ -517,7 +551,7 @@
     // Carrega da nuvem ao abrir a página
     loadFromCloud();
 
-    // Service Worker (mantido)
+    // Registro do Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
