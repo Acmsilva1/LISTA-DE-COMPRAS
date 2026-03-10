@@ -344,8 +344,18 @@
     async function apiGet(params) {
         const url = API_URL + '?' + new URLSearchParams(params).toString();
         const res = await fetch(url);
-        if (!res.ok) throw new Error('Erro na comunicação com o servidor (GET)');
-        return res.json();
+        const text = await res.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (_) {
+            throw new Error(`GET falhou (${res.status}) - resposta não JSON: ${text}`);
+        }
+        if (!res.ok) {
+            const errMsg = (data && data.error) || text || `Status HTTP ${res.status}`;
+            throw new Error(`GET falhou (${res.status}): ${errMsg}`);
+        }
+        return data;
     }
 
     async function apiPost(body) {
@@ -354,8 +364,18 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        if (!res.ok) throw new Error('Erro na comunicação com o servidor (POST)');
-        return res.json();
+        const text = await res.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (_) {
+            throw new Error(`POST falhou (${res.status}) - resposta não JSON: ${text}`);
+        }
+        if (!res.ok) {
+            const errMsg = (data && data.error) || text || `Status HTTP ${res.status}`;
+            throw new Error(`POST falhou (${res.status}): ${errMsg}`);
+        }
+        return data;
     }
 
     function toggleModule(id) {
@@ -413,19 +433,23 @@
         if (!name || isNaN(qty) || qty <= 0) return;
 
         try {
-            await apiPost({
+            const result = await apiPost({
                 action: 'create',
                 category: cat,
                 name: name,
                 qty: qty
             });
 
+            if (!result.success) {
+                throw new Error(result.error || 'Falha ao criar item na API');
+            }
+
             nInput.value = '';
             qInput.value = '1';
 
             await loadFromCloud();
         } catch (e) {
-            alert('Erro ao criar item na nuvem.');
+            alert('Erro ao criar item na nuvem: ' + (e && (e.message || e.toString())));
         }
     }
 
