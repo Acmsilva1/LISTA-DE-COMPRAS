@@ -3,156 +3,456 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LISTA DE COMPRAS PRO</title>
+    <title>LISTA DE COMPRAS</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --primary: #3b82f6; --danger: #ef4444; --success: #22c55e; --text: #f1f5f9; --border: #334155; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 80px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .module { background: var(--card); border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; }
-        .module-header { padding: 15px; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; }
-        .module-content { display: none; padding: 15px; background: #161e2e; border-top: 1px solid var(--border); }
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --secondary: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #f1f5f9;
+            --border: #334155;
+        }
+
+        * { 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            padding-bottom: 80px;
+            line-height: 1.5;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 0 45px;
+            color: var(--text);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-reset-all, .btn-reset-checks {
+            position: absolute;
+            background: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset-all { right: 0; border: 2px solid var(--danger); color: var(--danger); }
+        .btn-reset-checks { left: 0; border: 2px solid var(--success); color: var(--success); }
+
+        .btn-reset-all:active { background: var(--danger); color: white; transform: scale(0.9); }
+        .btn-reset-checks:active { background: var(--success); color: white; transform: scale(0.9); }
+
+        .module {
+            background: var(--card);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .module-header {
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .module-header:active { filter: brightness(0.8); }
+
+        .module-content {
+            display: none;
+            padding: 16px;
+        }
+
         .module-content.open { display: block; }
-        .item-row { display: flex; align-items: center; background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; gap: 10px; }
-        .item-row.checked { opacity: 0.5; text-decoration: line-through; }
-        .check { width: 24px; height: 24px; border: 2px solid var(--primary); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
-        .check.active::after { content: '✓'; color: var(--primary); font-weight: bold; }
-        input { background: var(--card); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 5px; width: 100%; }
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 15px; }
-        button { cursor: pointer; border: none; border-radius: 5px; }
-        .btn-sync { background: var(--primary); color: white; padding: 10px; }
+
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .input-item { flex: 2 1 150px; }
+        .input-qty { flex: 1 1 70px; }
+        
+        input[type="text"], input[type="number"] {
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text);
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn-add {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1 1 100%;
+        }
+
+        @media (min-width: 400px) { .btn-add { flex: 0 1 auto; } }
+
+        .item-list { list-style: none; padding: 0; margin: 0; }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .item-row.checked { opacity: 0.5; }
+        .item-row:last-child { border-bottom: none; }
+
+        .check-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .check-container.checked { border-color: var(--success); background: rgba(34, 197, 94, 0.1); }
+        .check-container.checked::after { content: '✓'; color: var(--success); font-size: 20px; font-weight: 900; }
+
+        .item-info { flex-grow: 1; margin-left: 8px; cursor: pointer; }
+        .item-name { font-weight: 600; font-size: 1.05rem; display: block; }
+        .item-row.checked .item-name { text-decoration: line-through; color: var(--secondary); }
+        .item-qty { font-size: 0.85rem; color: var(--secondary); }
+
+        .actions { display: flex; gap: 8px; }
+
+        .btn-delete, .btn-edit, .btn-save {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-delete { background-color: var(--danger); }
+        .btn-edit { background-color: var(--warning); }
+        .btn-save { background-color: var(--primary); }
+
+        .badge {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        #homeBtn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .edit-fields { display: flex; gap: 6px; flex-grow: 1; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0; font-size: 1rem;">LISTA DO ANDRÉ</h2>
-    <button class="btn-sync" onclick="syncAll()">☁️ Sincronizar</button>
+<div class="container">
+    <div class="header-area">
+        <button class="btn-reset-checks" onclick="resetChecks()" title="Resetar Marcações">✓</button>
+        <h1>LISTA DE COMPRAS</h1>
+        <button class="btn-reset-all" onclick="resetAllData()" title="Limpar Tudo">X</button>
+    </div>
+
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('mantimentos')">
+            <span>📦 MANTIMENTOS</span>
+            <span class="badge" id="badge-mantimentos">0</span>
+        </div>
+        <div id="mantimentos" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-mantimentos" class="input-item" placeholder="Item">
+                <input type="number" id="qty-mantimentos" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('mantimentos')">ADICIONAR</button>
+            </div>
+            <ul id="list-mantimentos" class="item-list"></ul>
+        </div>
+    </div>
+
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('carnes')">
+            <span>🥩 CARNES E DERIVADOS</span>
+            <span class="badge" id="badge-carnes">0</span>
+        </div>
+        <div id="carnes" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-carnes" class="input-item" placeholder="Item">
+                <input type="number" id="qty-carnes" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('carnes')">ADICIONAR</button>
+            </div>
+            <ul id="list-carnes" class="item-list"></ul>
+        </div>
+    </div>
+
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('higiene')">
+            <span>🧼 HIGIENE E LIMPEZA</span>
+            <span class="badge" id="badge-higiene">0</span>
+        </div>
+        <div id="higiene" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-higiene" class="input-item" placeholder="Item">
+                <input type="number" id="qty-higiene" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('higiene')">ADICIONAR</button>
+            </div>
+            <ul id="list-higiene" class="item-list"></ul>
+        </div>
+    </div>
+
+    <div class="module">
+        <div class="module-header" onclick="toggleModule('feira')">
+            <span>🥦 FEIRA</span>
+            <span class="badge" id="badge-feira">0</span>
+        </div>
+        <div id="feira" class="module-content">
+            <div class="form-group">
+                <input type="text" id="name-feira" class="input-item" placeholder="Item">
+                <input type="number" id="qty-feira" class="input-qty" placeholder="Qtd" min="1" value="1">
+                <button class="btn-add" onclick="createItem('feira')">ADICIONAR</button>
+            </div>
+            <ul id="list-feira" class="item-list"></ul>
+        </div>
+    </div>
 </div>
 
-<div id="app"></div>
-
-<div class="nav-bar">
-    <button onclick="location.reload()" style="background:none; color:white">🔃 Atualizar App</button>
-    <button onclick="resetChecks()" style="background:none; color:var(--danger)">🔄 Limpar Checks</button>
-</div>
+<button id="homeBtn" onclick="closeAllModules()">🏠</button>
 
 <script>
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz08-qHNRGkh0Kqgl2dlBdcYUGhZNQrGG0wTd9piGQIuO539sr22EV7MAIKdsctJ6rx/exec'; // <--- COLOQUE SUA URL DO GOOGLE AQUI
-    const DB_KEY = 'andre_db_v3';
+    const DB_KEY = 'andre_shopping_dark_v1';
     const CATEGORIES = ['mantimentos', 'carnes', 'higiene', 'feira'];
-    const ICONS = { mantimentos: '📦', carnes: '🥩', higiene: '🧼', feira: '🍎' };
-
+    
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || { mantimentos: [], carnes: [], higiene: [], feira: [] };
-    let openModules = JSON.parse(localStorage.getItem('open_tabs')) || {};
+    
+    if (db.comida) {
+        db.mantimentos = [...(db.mantimentos || []), ...(db.comida || [])];
+        delete db.comida;
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+    }
+    
     let editId = null;
 
-    function save() {
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
-        localStorage.setItem('open_tabs', JSON.stringify(openModules));
-        render();
+    function toggleModule(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.contains('open');
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+        if (!isOpen) el.classList.add('open');
     }
 
-    async function callGAS(payload) {
-        try { await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch(e){}
+    function closeAllModules() {
+        document.querySelectorAll('.module-content').forEach(m => m.classList.remove('open'));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function addItem(cat) {
-        const name = document.getElementById(`in-${cat}`).value;
-        if(!name) return;
-        const item = { id: Date.now(), name, qty: 1, checked: false };
-        db[cat].push(item);
-        document.getElementById(`in-${cat}`).value = '';
-        save();
-        callGAS({ category: cat, ...item });
-    }
-
-    function toggleCheck(cat, id) {
-        const item = db[cat].find(i => i.id === id);
-        item.checked = !item.checked;
-        save();
-        callGAS({ category: cat, ...item });
-    }
-
-    function deleteItem(cat, id) {
-        const item = db[cat].find(i => i.id === id);
-        db[cat] = db[cat].filter(i => i.id !== id);
-        save();
-        callGAS({ action: 'DELETE', category: cat, name: item.name });
-    }
-
-    async function syncAll() {
-        const op = confirm("OK: Enviar para Nuvem\nCANCELAR: Baixar da Nuvem");
-        if(op) {
-            alert("Enviando... aguarde.");
-            for (const cat of CATEGORIES) {
-                for (const item of db[cat]) {
-                    await callGAS({ category: cat, ...item });
-                    await new Promise(r => setTimeout(r, 300));
-                }
-            }
-            alert("Enviado!");
-        } else {
-            const res = await fetch(GAS_URL);
-            const data = await res.json();
-            if(data.length > 0) {
-                const newDb = { mantimentos: [], carnes: [], higiene: [], feira: [] };
-                data.forEach(i => { if(newDb[i.category]) newDb[i.category].push({id: Math.random(), ...i}); });
-                db = newDb;
-                save();
-            }
+    function resetAllData() {
+        if (confirm("Deseja apagar TODOS os itens e módulos? Operação sem CTRL+Z.")) {
+            db = { mantimentos: [], carnes: [], higiene: [], feira: [] };
+            save();
+            closeAllModules();
         }
     }
 
-    function render() {
-        const container = document.getElementById('app');
-        container.innerHTML = '';
-        CATEGORIES.forEach(cat => {
-            const isOpen = openModules[cat] || false;
-            const mod = document.createElement('div');
-            mod.className = 'module';
-            mod.innerHTML = `
-                <div class="module-header" onclick="openModules['${cat}']=!openModules['${cat}']; save();">
-                    <span>${ICONS[cat]} ${cat.toUpperCase()} (${db[cat].length})</span>
-                    <span>${isOpen ? '▲' : '▼'}</span>
-                </div>
-                <div class="module-content ${isOpen ? 'open' : ''}">
-                    <div style="display:flex; gap:5px; margin-bottom:10px">
-                        <input id="in-${cat}" placeholder="Novo...">
-                        <button onclick="addItem('${cat}')" style="background:var(--primary); color:white; padding:10px">+</button>
-                    </div>
-                    <div id="list-${cat}"></div>
-                </div>
-            `;
-            container.appendChild(mod);
-
-            const list = document.getElementById(`list-${cat}`);
-            db[cat].forEach(item => {
-                const row = document.createElement('div');
-                row.className = `item-row ${item.checked ? 'checked' : ''}`;
-                row.innerHTML = `
-                    <div class="check ${item.checked ? 'active' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
-                    <div style="flex:1" onclick="toggleCheck('${cat}', ${item.id})">${item.name}</div>
-                    <button onclick="deleteItem('${cat}', ${item.id})" style="background:none; font-size:1.2rem">🗑️</button>
-                `;
-                list.appendChild(row);
-            });
-        });
-    }
-
     function resetChecks() {
-        if(confirm("Limpar todos os checks?")) {
-            CATEGORIES.forEach(cat => db[cat].forEach(i => { i.checked = false; callGAS({category: cat, ...i}); }));
+        if (confirm("Deseja desmarcar todos os itens comprados para uma nova rodada?")) {
+            CATEGORIES.forEach(cat => {
+                if (db[cat]) {
+                    db[cat] = db[cat].map(item => ({ ...item, checked: false }));
+                }
+            });
             save();
         }
     }
 
+    function toggleCheck(cat, id) {
+        const item = db[cat].find(i => i.id === id);
+        if (item) {
+            item.checked = !item.checked;
+            save();
+        }
+    }
+
+    function createItem(cat) {
+        const nInput = document.getElementById(`name-${cat}`);
+        const qInput = document.getElementById(`qty-${cat}`);
+        const name = nInput.value.trim();
+        const qty = parseInt(qInput.value);
+
+        if (!name || isNaN(qty) || qty <= 0) return;
+
+        db[cat].push({ 
+            id: Date.now() + Math.random(), 
+            name: name, 
+            qty: qty, 
+            checked: false 
+        });
+        
+        nInput.value = ''; 
+        qInput.value = '1';
+        save();
+    }
+
+    function deleteItem(cat, id) {
+        db[cat] = db[cat].filter(i => i.id !== id);
+        save();
+    }
+
+    function startEdit(id) {
+        editId = id;
+        render();
+    }
+
+    function saveEdit(cat, id) {
+        const newName = document.getElementById(`edit-n-${id}`).value.trim();
+        const newQty = parseInt(document.getElementById(`edit-q-${id}`).value);
+
+        if (!newName || isNaN(newQty) || newQty <= 0) return;
+
+        const item = db[cat].find(i => i.id === id);
+        if (item) {
+            item.name = newName;
+            item.qty = newQty;
+        }
+        editId = null;
+        save();
+    }
+
+    function save() {
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        render();
+    }
+
+    function render() {
+        CATEGORIES.forEach(cat => {
+            const listElement = document.getElementById(`list-${cat}`);
+            const badgeElement = document.getElementById(`badge-${cat}`);
+            if(!listElement || !badgeElement) return;
+            
+            listElement.innerHTML = '';
+            
+            db[cat].forEach(item => {
+                const li = document.createElement('li');
+                li.className = `item-row ${item.checked ? 'checked' : ''}`;
+                
+                if (editId === item.id) {
+                    li.innerHTML = `
+                        <div class="edit-fields">
+                            <input type="text" id="edit-n-${item.id}" value="${item.name}" style="flex:2">
+                            <input type="number" id="edit-q-${item.id}" value="${item.qty}" style="flex:1">
+                        </div>
+                        <button class="btn-save" onclick="saveEdit('${cat}', ${item.id})">OK</button>
+                    `;
+                } else {
+                    li.innerHTML = `
+                        <div class="check-container ${item.checked ? 'checked' : ''}" onclick="toggleCheck('${cat}', ${item.id})"></div>
+                        <div class="item-info" onclick="toggleCheck('${cat}', ${item.id})">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-qty">Qtd: ${item.qty}</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-edit" onclick="startEdit(${item.id})">✏️</button>
+                            <button class="btn-delete" onclick="deleteItem('${cat}', ${item.id})">🗑️</button>
+                        </div>
+                    `;
+                }
+                listElement.appendChild(li);
+            });
+            badgeElement.innerText = db[cat].length;
+        });
+    }
+
     render();
-    window.addEventListener('load', () => {
-        if(CATEGORIES.every(c => db[c].length === 0)) syncAll();
-    });
+
+    // Registro do Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW ativo:', reg.scope))
+                .catch(err => console.error('Erro no SW:', err));
+        });
+    }
 </script>
 </body>
 </html>
